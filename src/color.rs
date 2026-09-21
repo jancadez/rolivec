@@ -20,6 +20,20 @@ impl Color {
         Self::new(r, g, b, a)
     }
 
+    pub fn blend_over(self, dst: Color) -> Color {
+        let src_a = self.a as u32;
+        let dst_a = dst.a as u32;
+
+        let out_a = src_a + dst_a * (255 - src_a) / 255;
+        let dst_factor = dst_a * (255 - src_a) / 255;
+
+        let out_r = (self.r as u32 * src_a + dst.r as u32 * dst_factor) / out_a;
+        let out_g = (self.g as u32 * src_a + dst.g as u32 * dst_factor) / out_a;
+        let out_b = (self.b as u32 * src_a + dst.b as u32 * dst_factor) / out_a;
+
+        Color::new(out_r as u8, out_g as u8, out_b as u8, out_a as u8)
+    }
+
     pub const RED: Color = Color::rgb(220, 70, 70);
     pub const GREEN: Color = Color::rgb(75, 190, 110);
     pub const BLUE: Color = Color::rgb(70, 125, 220);

@@ -6,5 +6,5 @@ mod rendering;
 pub use framebuffer::Framebuffer;
 
 mod math;
-use math::vec;
-pub use vec::Vec2;
+use math::vec2;
+pub use vec2::Vec2;

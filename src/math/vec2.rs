@@ -9,7 +9,7 @@ pub struct Vec2<T> {
 
 impl<T> Vec2<T> {
     pub fn new(x: T, y: T) -> Self {
-        Vec2 { x: x, y: y }
+        Vec2 { x, y }
     }
 }
 
@@ -18,10 +18,10 @@ where
     T: Add<Output = T>,
 {
     type Output = Self;
-    fn add(self, other: Self) -> Self {
+    fn add(self, rhs: Self) -> Self {
         Self {
-            x: self.x + other.x,
-            y: self.y + other.y,
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
         }
     }
 }
@@ -31,10 +31,10 @@ where
     T: Sub<Output = T>,
 {
     type Output = Self;
-    fn sub(self, other: Self) -> Self {
+    fn sub(self, rhs: Self) -> Self {
         Self {
-            x: self.x - other.x,
-            y: self.y - other.y,
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
         }
     }
 }
@@ -44,10 +44,10 @@ where
     T: Mul<Output = T> + Copy,
 {
     type Output = Self;
-    fn mul(self, scalar: T) -> Self {
+    fn mul(self, rhs: T) -> Self {
         Self {
-            x: self.x * scalar,
-            y: self.y * scalar,
+            x: self.x * rhs,
+            y: self.y * rhs,
         }
     }
 }
@@ -57,10 +57,10 @@ where
     T: Div<Output = T> + Copy,
 {
     type Output = Self;
-    fn div(self, scalar: T) -> Self {
+    fn div(self, rhs: T) -> Self {
         Self {
-            x: self.x / scalar,
-            y: self.y / scalar,
+            x: self.x / rhs,
+            y: self.y / rhs,
         }
     }
 }

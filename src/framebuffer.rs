@@ -44,6 +44,12 @@ impl Framebuffer {
         (inside_x && inside_y).then(|| p.y as usize * self.width + p.x as usize)
     }
 
+    pub(crate) fn screen(&self, p: Vec2<f32>) -> Vec2<i32> {
+        let x = ((p.x + 1.0) / 2.0 * (self.width - 1) as f32).round();
+        let y = ((p.y + 1.0) / 2.0 * (self.height - 1) as f32).round();
+        Vec2::new(x as i32, y as i32)
+    }
+
     pub(crate) fn pixel_mut(&mut self, p: Vec2<i32>) -> Option<&mut Color> {
         self.map_idx(p).map(|idx| &mut self.pixels[idx])
     }

@@ -11,26 +11,25 @@ fn main() -> Result<()> {
     fb.clear(Color::BLUE);
     write(&fb)?;
 
-    fb.draw_line(Vec2::new(0, 0), Vec2::new(800, 600), Color::ORANGE);
+    fb.draw_line(Vec2::new(-1.0, -1.0), Vec2::new(1.0, 1.0), Color::ORANGE);
     write(&fb)?;
 
-    fb.draw_rectangle(Vec2::new(0, 0), Vec2::new(120, 90), Color::LIME);
+    fb.draw_rectangle(Vec2::new(-1.0, -1.0), Vec2::new(-0.5, -0.5), Color::LIME);
     write(&fb)?;
 
-    let mut lavander = Color::LAVENDER;
-    lavander.a = 100;
-    for x in 100..=200 {
-        for y in 60..=120 {
-            fb.blend_pixel(Vec2::new(x, y), lavander);
-        }
-    }
+    let lavander = Color {
+        a: 100,
+        ..Color::LAVENDER
+    };
+
+    fb.blend_rectangle(Vec2::new(-0.25, -0.25), Vec2::new(-0.75, -0.75), lavander);
     write(&fb)?;
 
     Ok(())
 }
 
 fn write(fb: &Framebuffer) -> Result<()> {
-    ppm::write(fb, &format!("frame{}.ppm", increase_counter()))
+    ppm::write(fb, &format!("frame{:03}.ppm", increase_counter()))
 }
 
 fn increase_counter() -> usize {
