@@ -1,3 +1,6 @@
+pub mod draw2d;
+pub mod pixel;
+
 use crate::{Color, Vec2};
 
 #[derive(Debug)]

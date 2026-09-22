@@ -1,46 +1,6 @@
 use crate::{Color, Framebuffer, Vec2};
 
 impl Framebuffer {
-    pub fn set_pixel(&mut self, p: Vec2<i32>, color: Color) {
-        if let Some(pixel) = self.pixel_mut(p) {
-            *pixel = color
-        }
-    }
-
-    pub fn blend_pixel(&mut self, p: Vec2<i32>, color: Color) {
-        if let Some(dst) = self.pixel_mut(p) {
-            *dst = color.blend_over(*dst);
-        }
-    }
-
-    pub fn set_range(&mut self, a: Vec2<i32>, b: Vec2<i32>, color: Color) {
-        let Some(start) = self.map_idx(a) else {
-            return;
-        };
-
-        let Some(end) = self.map_idx(b) else {
-            return;
-        };
-
-        let pixels = self.pixels_mut();
-        pixels[start..=end].fill(color);
-    }
-
-    pub fn blend_range(&mut self, a: Vec2<i32>, b: Vec2<i32>, color: Color) {
-        let Some(start) = self.map_idx(a) else {
-            return;
-        };
-
-        let Some(end) = self.map_idx(b) else {
-            return;
-        };
-
-        let pixels = self.pixels_mut();
-        for pixel in &mut pixels[start..=end] {
-            *pixel = color.blend_over(*pixel);
-        }
-    }
-
     pub fn draw_line(&mut self, a: Vec2<f32>, b: Vec2<f32>, color: Color) {
         self.line(a, b, color, Framebuffer::set_pixel);
     }
@@ -62,10 +22,10 @@ impl Framebuffer {
     where
         F: Fn(&mut Framebuffer, Vec2<i32>, Color),
     {
-        let a_ndc = self.screen(a);
-        let b_ndc = self.screen(b);
-        let dx = (b_ndc.x - a_ndc.x) as f32;
-        let dy = (b_ndc.y - a_ndc.y) as f32;
+        let a_scr = self.screen(a);
+        let b_scr = self.screen(b);
+        let dx = (b_scr.x - a_scr.x) as f32;
+        let dy = (b_scr.y - a_scr.y) as f32;
 
         let step_x: f32;
         let step_y: f32;
@@ -78,8 +38,8 @@ impl Framebuffer {
             step_y = dy / dy;
         }
 
-        let mut x = a_ndc.x as f32;
-        let mut y = a_ndc.y as f32;
+        let mut x = a_scr.x as f32;
+        let mut y = a_scr.y as f32;
 
         for _ in 0..dx.abs().max(dy.abs()) as usize {
             let p = Vec2::new(x.round() as i32, y.round() as i32);
@@ -89,7 +49,7 @@ impl Framebuffer {
             y += step_y;
         }
 
-        pixel_func(self, b_ndc, color);
+        pixel_func(self, a_scr, color);
     }
 
     pub fn draw_rectangle(&mut self, a: Vec2<f32>, b: Vec2<f32>, color: Color) {
@@ -113,13 +73,13 @@ impl Framebuffer {
     where
         F: Fn(&mut Framebuffer, Vec2<i32>, Vec2<i32>, Color),
     {
-        let a_ndc = self.screen(a);
-        let b_ndc = self.screen(b);
+        let a_scr = self.screen(a);
+        let b_scr = self.screen(b);
 
-        let min_x = a_ndc.x.min(b_ndc.x);
-        let max_x = a_ndc.x.max(b_ndc.x);
-        let min_y = a_ndc.y.min(b_ndc.y);
-        let max_y = a_ndc.y.max(b_ndc.y);
+        let min_x = a_scr.x.min(b_scr.x);
+        let max_x = a_scr.x.max(b_scr.x);
+        let min_y = a_scr.y.min(b_scr.y);
+        let max_y = a_scr.y.max(b_scr.y);
 
         let x_limit = (self.width - 1) as i32;
         let y_limit = (self.height - 1) as i32;
