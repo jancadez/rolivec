@@ -1,5 +1,6 @@
 pub mod draw2d;
 pub mod pixel;
+pub mod rasterize;
 
 use crate::{Color, Vec2};
 
@@ -51,6 +52,20 @@ impl Framebuffer {
         let x = ((p.x + 1.0) / 2.0 * (self.width - 1) as f32).round();
         let y = ((1.0 - (p.y + 1.0) / 2.0) * (self.height - 1) as f32).round();
         Vec2::new(x as i32, y as i32)
+    }
+
+    pub(crate) fn bounding_box(
+        &self,
+        a: Vec2<i32>,
+        b: Vec2<i32>,
+        c: Vec2<i32>,
+    ) -> (Vec2<i32>, Vec2<i32>) {
+        let min_x = a.x.min(b.x.min(c.x));
+        let min_y = a.y.min(b.y.min(c.y));
+        let max_x = a.x.max(b.x.max(c.x));
+        let max_y = a.y.max(b.y.max(c.y));
+
+        (Vec2::new(min_x, min_y), Vec2::new(max_x, max_y))
     }
 
     pub(crate) fn pixel_mut(&mut self, p: Vec2<i32>) -> Option<&mut Color> {

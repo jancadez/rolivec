@@ -1,4 +1,4 @@
-use rolivec::{Color, Framebuffer, Vec2};
+use rolivec::{Color, Framebuffer, Fragment, Vec2, Vec3 };
 use std::io::Result;
 
 mod ppm;
