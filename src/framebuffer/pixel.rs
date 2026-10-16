@@ -1,19 +1,19 @@
-use crate::{Color, Framebuffer, Vec2};
+use crate::{Color, Framebuffer, IVec2};
 
 impl Framebuffer {
-    pub fn set_pixel(&mut self, p: Vec2<i32>, color: Color) {
+    pub fn set_pixel(&mut self, p: IVec2, color: Color) {
         if let Some(pixel) = self.pixel_mut(p) {
             *pixel = color
         }
     }
 
-    pub fn blend_pixel(&mut self, p: Vec2<i32>, color: Color) {
+    pub fn blend_pixel(&mut self, p: IVec2, color: Color) {
         if let Some(dst) = self.pixel_mut(p) {
             *dst = color.blend_over(*dst);
         }
     }
 
-    pub fn set_range(&mut self, a: Vec2<i32>, b: Vec2<i32>, color: Color) {
+    pub fn set_range(&mut self, a: IVec2, b: IVec2, color: Color) {
         let Some(start) = self.map_idx(a) else {
             return;
         };
@@ -26,7 +26,7 @@ impl Framebuffer {
         pixels[start..=end].fill(color);
     }
 
-    pub fn blend_range(&mut self, a: Vec2<i32>, b: Vec2<i32>, color: Color) {
+    pub fn blend_range(&mut self, a: IVec2, b: IVec2, color: Color) {
         let Some(start) = self.map_idx(a) else {
             return;
         };

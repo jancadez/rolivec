@@ -1,4 +1,4 @@
-use rolivec::{Color, Framebuffer, Fragment, Vec2, Vec3 };
+use rolivec::{Color, Fragment, Framebuffer, Vec2, Vec3};
 use std::io::Result;
 
 mod ppm;
@@ -11,10 +11,10 @@ fn main() -> Result<()> {
     fb.clear(Color::BLUE);
     write(&fb)?;
 
-    fb.draw_line(Vec2::new(-1.0, -1.0), Vec2::new(1.0, 1.0), Color::ORANGE);
+    fb.set_line(Vec2::new(-1.0, -1.0), Vec2::new(1.0, 1.0), Color::ORANGE);
     write(&fb)?;
 
-    fb.draw_rectangle(Vec2::new(-1.0, -1.0), Vec2::new(-0.5, -0.5), Color::LIME);
+    fb.set_rectangle(Vec2::new(-1.0, -1.0), Vec2::new(-0.5, -0.5), Color::LIME);
     write(&fb)?;
 
     let lavander = Color {
@@ -22,7 +22,7 @@ fn main() -> Result<()> {
         ..Color::LAVENDER
     };
 
-    fb.blend_rectangle(Vec2::new(-0.25, -0.25), Vec2::new(-0.75, -0.75), lavander);
+    fb.draw_rectangle(Vec2::new(-0.25, -0.25), Vec2::new(-0.75, -0.75), lavander);
     write(&fb)?;
 
     Ok(())

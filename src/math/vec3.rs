@@ -2,31 +2,22 @@ use std::ops::{Add, Div, Mul, Sub};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[repr(C)]
-pub struct Vec3<T> {
-    pub x: T,
-    pub y: T,
-    pub z: T,
+pub struct Vec3 {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
 }
 
-impl<T> Vec3<T> {
-    pub fn new(x: T, y: T, z: T) -> Self {
+impl Vec3 {
+    pub fn new(x: f32, y: f32, z: f32) -> Vec3 {
         Vec3 { x, y, z }
     }
 
-    pub fn dot(self, rhs: Self) -> T
-    where
-        T: Add<Output = T>,
-        T: Mul<Output = T>,
-    {
+    pub fn dot(self, rhs: Vec3) -> f32 {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
 
-    pub fn cross(self, rhs: Self) -> Self
-    where
-        T: Sub<Output = T>,
-        T: Mul<Output = T>,
-        T: Copy,
-    {
+    pub fn cross(self, rhs: Vec3) -> Vec3 {
         Vec3::new(
             self.y * rhs.z - self.z * rhs.y,
             self.z * rhs.x - self.x * rhs.z,
@@ -35,13 +26,10 @@ impl<T> Vec3<T> {
     }
 }
 
-impl<T> Add for Vec3<T>
-where
-    T: Add<Output = T>,
-{
-    type Output = Self;
-    fn add(self, rhs: Self) -> Self {
-        Self {
+impl Add for Vec3 {
+    type Output = Vec3;
+    fn add(self, rhs: Vec3) -> Vec3 {
+        Vec3 {
             x: self.x + rhs.x,
             y: self.y + rhs.y,
             z: self.z + rhs.z,
@@ -49,13 +37,10 @@ where
     }
 }
 
-impl<T> Sub for Vec3<T>
-where
-    T: Sub<Output = T>,
-{
-    type Output = Self;
-    fn sub(self, rhs: Self) -> Self {
-        Self {
+impl Sub for Vec3 {
+    type Output = Vec3;
+    fn sub(self, rhs: Vec3) -> Vec3 {
+        Vec3 {
             x: self.x - rhs.x,
             y: self.y - rhs.y,
             z: self.z - rhs.z,
@@ -63,13 +48,10 @@ where
     }
 }
 
-impl<T> Mul<T> for Vec3<T>
-where
-    T: Mul<Output = T> + Copy,
-{
-    type Output = Self;
-    fn mul(self, rhs: T) -> Self {
-        Self {
+impl Mul<f32> for Vec3 {
+    type Output = Vec3;
+    fn mul(self, rhs: f32) -> Vec3 {
+        Vec3 {
             x: self.x * rhs,
             y: self.y * rhs,
             z: self.z * rhs,
@@ -77,13 +59,10 @@ where
     }
 }
 
-impl<T> Div<T> for Vec3<T>
-where
-    T: Div<Output = T> + Copy,
-{
-    type Output = Self;
-    fn div(self, rhs: T) -> Self {
-        Self {
+impl Div<f32> for Vec3 {
+    type Output = Vec3;
+    fn div(self, rhs: f32) -> Vec3 {
+        Vec3 {
             x: self.x / rhs,
             y: self.y / rhs,
             z: self.z / rhs,

@@ -2,7 +2,7 @@ pub mod draw2d;
 pub mod pixel;
 pub mod rasterize;
 
-use crate::{Color, Vec2};
+use crate::{Color, IVec2, Vec2};
 
 #[derive(Debug)]
 pub struct Framebuffer {
@@ -42,33 +42,28 @@ impl Framebuffer {
         }
     }
 
-    pub(crate) fn map_idx(&self, p: Vec2<i32>) -> Option<usize> {
+    pub(crate) fn map_idx(&self, p: IVec2) -> Option<usize> {
         let inside_x = (0..self.width as i32).contains(&p.x);
         let inside_y = (0..self.height as i32).contains(&p.y);
         (inside_x && inside_y).then(|| p.y as usize * self.width + p.x as usize)
     }
 
-    pub(crate) fn screen(&self, p: Vec2<f32>) -> Vec2<i32> {
+    pub(crate) fn screen(&self, p: Vec2) -> IVec2 {
         let x = ((p.x + 1.0) / 2.0 * (self.width - 1) as f32).round();
         let y = ((1.0 - (p.y + 1.0) / 2.0) * (self.height - 1) as f32).round();
-        Vec2::new(x as i32, y as i32)
+        IVec2::new(x as i32, y as i32)
     }
 
-    pub(crate) fn bounding_box(
-        &self,
-        a: Vec2<i32>,
-        b: Vec2<i32>,
-        c: Vec2<i32>,
-    ) -> (Vec2<i32>, Vec2<i32>) {
+    pub(crate) fn bounding_box(&self, a: IVec2, b: IVec2, c: IVec2) -> (IVec2, IVec2) {
         let min_x = a.x.min(b.x.min(c.x));
         let min_y = a.y.min(b.y.min(c.y));
         let max_x = a.x.max(b.x.max(c.x));
         let max_y = a.y.max(b.y.max(c.y));
 
-        (Vec2::new(min_x, min_y), Vec2::new(max_x, max_y))
+        (IVec2::new(min_x, min_y), IVec2::new(max_x, max_y))
     }
 
-    pub(crate) fn pixel_mut(&mut self, p: Vec2<i32>) -> Option<&mut Color> {
+    pub(crate) fn pixel_mut(&mut self, p: IVec2) -> Option<&mut Color> {
         self.map_idx(p).map(|idx| &mut self.pixels[idx])
     }
 

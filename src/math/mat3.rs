@@ -1,31 +1,38 @@
 use crate::Vec3;
-use std::ops::{Add, Mul, Sub};
+use std::ops::Mul;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[repr(C)]
-pub struct Mat3<T> {
-    pub x: Vec3<T>,
-    pub y: Vec3<T>,
-    pub z: Vec3<T>,
+pub struct Mat3 {
+    pub x: Vec3,
+    pub y: Vec3,
+    pub z: Vec3,
 }
 
-impl<T> Mat3<T>
-where
-    T: Add<Output = T>,
-    T: Sub<Output = T>,
-    T: Mul<Output = T>,
-    T: Copy,
-{
-    pub fn new(x: Vec3<T>, y: Vec3<T>, z: Vec3<T>) -> Self {
-        Self { x, y, z }
+impl Mat3 {
+    pub fn new(x: Vec3, y: Vec3, z: Vec3) -> Mat3 {
+        Mat3 { x, y, z }
     }
+}
 
-    pub fn determinant(&self) -> T {
-        self.x.x * self.y.y * self.z.z
-            + self.y.x * self.z.y * self.x.z
-            + self.z.x * self.x.y * self.y.z
-            - self.z.x * self.y.y * self.x.z
-            - self.y.x * self.x.y * self.z.z
-            - self.x.x * self.z.y * self.y.z
+impl Mul for Mat3 {
+    type Output = Mat3;
+    fn mul(self, rhs: Mat3) -> Mat3 {
+        Mat3::new(
+            self * Vec3::new(rhs.x.x, rhs.x.y, rhs.x.z),
+            self * Vec3::new(rhs.y.x, rhs.y.y, rhs.y.z),
+            self * Vec3::new(rhs.z.x, rhs.z.y, rhs.z.z),
+        )
+    }
+}
+
+impl Mul<Vec3> for Mat3 {
+    type Output = Vec3;
+    fn mul(self, rhs: Vec3) -> Vec3 {
+        Vec3::new(
+            self.x.x * rhs.x + self.y.x * rhs.y + self.z.x * rhs.z,
+            self.x.y * rhs.x + self.y.y * rhs.y + self.z.y * rhs.z,
+            self.x.z * rhs.x + self.y.z * rhs.y + self.z.z * rhs.z,
+        )
     }
 }

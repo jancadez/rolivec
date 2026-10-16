@@ -1,6 +1,6 @@
-use std::fs;
 use fs::File;
-use std::io::{BufWriter, Write, Result};
+use std::fs;
+use std::io::{BufWriter, Result, Write};
 use std::path::PathBuf;
 
 use rolivec::Framebuffer;

@@ -1,11 +1,11 @@
-use crate::{Color, Framebuffer, Vec2};
+use crate::{Color, Framebuffer, IVec2, Vec2};
 
 impl Framebuffer {
-    pub fn draw_line(&mut self, a: Vec2<f32>, b: Vec2<f32>, color: Color) {
+    pub fn set_line(&mut self, a: Vec2, b: Vec2, color: Color) {
         self.line(a, b, color, Framebuffer::set_pixel);
     }
 
-    pub fn blend_line(&mut self, a: Vec2<f32>, b: Vec2<f32>, color: Color) {
+    pub fn draw_line(&mut self, a: Vec2, b: Vec2, color: Color) {
         if color.a == 0 {
             return;
         }
@@ -18,9 +18,9 @@ impl Framebuffer {
         self.line(a, b, color, pixel_func);
     }
 
-    pub(crate) fn line<F>(&mut self, a: Vec2<f32>, b: Vec2<f32>, color: Color, pixel_func: F)
+    pub(crate) fn line<F>(&mut self, a: Vec2, b: Vec2, color: Color, pixel_func: F)
     where
-        F: Fn(&mut Framebuffer, Vec2<i32>, Color),
+        F: Fn(&mut Framebuffer, IVec2, Color),
     {
         let a_scr = self.screen(a);
         let b_scr = self.screen(b);
@@ -42,7 +42,7 @@ impl Framebuffer {
         let mut y = a_scr.y as f32;
 
         for _ in 0..dx.abs().max(dy.abs()) as usize {
-            let p = Vec2::new(x.round() as i32, y.round() as i32);
+            let p = IVec2::new(x.round() as i32, y.round() as i32);
             pixel_func(self, p, color);
 
             x += step_x;
@@ -52,11 +52,11 @@ impl Framebuffer {
         pixel_func(self, a_scr, color);
     }
 
-    pub fn draw_rectangle(&mut self, a: Vec2<f32>, b: Vec2<f32>, color: Color) {
+    pub fn set_rectangle(&mut self, a: Vec2, b: Vec2, color: Color) {
         self.rectangle(a, b, color, Framebuffer::set_range);
     }
 
-    pub fn blend_rectangle(&mut self, a: Vec2<f32>, b: Vec2<f32>, color: Color) {
+    pub fn draw_rectangle(&mut self, a: Vec2, b: Vec2, color: Color) {
         if color.a == 0 {
             return;
         }
@@ -69,9 +69,9 @@ impl Framebuffer {
         self.rectangle(a, b, color, range_func);
     }
 
-    pub(crate) fn rectangle<F>(&mut self, a: Vec2<f32>, b: Vec2<f32>, color: Color, range_func: F)
+    pub(crate) fn rectangle<F>(&mut self, a: Vec2, b: Vec2, color: Color, range_func: F)
     where
-        F: Fn(&mut Framebuffer, Vec2<i32>, Vec2<i32>, Color),
+        F: Fn(&mut Framebuffer, IVec2, IVec2, Color),
     {
         let a_scr = self.screen(a);
         let b_scr = self.screen(b);
@@ -94,12 +94,17 @@ impl Framebuffer {
         let bottom = max_y.clamp(0, y_limit);
 
         if left == 0 && right == x_limit {
-            range_func(self, Vec2::new(left, top), Vec2::new(right, bottom), color);
+            range_func(
+                self,
+                IVec2::new(left, top),
+                IVec2::new(right, bottom),
+                color,
+            );
             return;
         }
 
         for y in top..=bottom {
-            range_func(self, Vec2::new(left, y), Vec2::new(right, y), color);
+            range_func(self, IVec2::new(left, y), IVec2::new(right, y), color);
         }
     }
 }
