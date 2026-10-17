@@ -8,7 +8,7 @@ use framebuffer::{draw2d, pixel, rasterize};
 pub use rasterize::{Fragment, FragmentShader, VertexShader};
 
 mod mesh;
-pub use mesh::{Mesh};
+pub use mesh::{Mesh, MeshError};
 
 mod math;
 use math::{imat2, mat2, mat3, mat4};

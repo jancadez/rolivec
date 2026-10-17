@@ -15,6 +15,15 @@ impl Mat4 {
         Mat4 { x, y, z, w }
     }
 
+    pub fn empty() -> Mat4 {
+        Mat4::new(
+            Vec4::new(0.0, 0.0, 0.0, 0.0),
+            Vec4::new(0.0, 0.0, 0.0, 0.0),
+            Vec4::new(0.0, 0.0, 0.0, 0.0),
+            Vec4::new(0.0, 0.0, 0.0, 0.0),
+        )
+    }
+
     pub fn projection(fov: f32, aspect: f32, n: f32, f: f32) -> Mat4 {
         let tan_half_fov = (fov / 2.0).tan();
         let g = 1.0 / tan_half_fov;
