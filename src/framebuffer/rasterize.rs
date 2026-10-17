@@ -83,13 +83,23 @@ impl Framebuffer {
             return;
         }
 
-        for x in start.x..=end.x {
-            for y in start.y..=end.y {
-                let p = IVec2::new(x, y);
+        let mut base_e_ab = IMat2::new(b_scr - a_scr, start - a_scr).determinant();
+        let mut base_e_bc = IMat2::new(c_scr - b_scr, start - b_scr).determinant();
+        let mut base_e_ca = IMat2::new(a_scr - c_scr, start - c_scr).determinant();
 
-                let e_ab = IMat2::new(b_scr - a_scr, p - a_scr).determinant();
-                let e_bc = IMat2::new(c_scr - b_scr, p - b_scr).determinant();
-                let e_ca = IMat2::new(a_scr - c_scr, p - c_scr).determinant();
+        let ab_step = IVec2::new(a_scr.y - b_scr.y, b_scr.x - a_scr.x);
+        let bc_step = IVec2::new(b_scr.y - c_scr.y, c_scr.x - b_scr.x);
+        let ca_step = IVec2::new(c_scr.y - a_scr.y, a_scr.x - c_scr.x);
+
+        for x in start.x..=end.x {
+            let mut e_ab = base_e_ab - ab_step.y;
+            let mut e_bc = base_e_bc - bc_step.y;
+            let mut e_ca = base_e_ca - ca_step.y;
+
+            for y in start.y..=end.y {
+                e_ab += ab_step.y;
+                e_bc += bc_step.y;
+                e_ca += ca_step.y;
 
                 if -e_ab < 0 || -e_bc < 0 || -e_ca < 0 {
                     continue;
@@ -99,17 +109,18 @@ impl Framebuffer {
                 let wb = e_ca as f32 * inv_det;
                 let wc = e_ab as f32 * inv_det;
 
+                let p = IVec2::new(x, y);
                 let p_ndc = self.screen_to_ndc(p);
+
                 let z = a.z * wa + b.z * wb + c.z * wc;
                 let Some(z_buf) = self.z_mut(p) else {
                     continue;
                 };
 
-                if z < *z_buf {
+                if z > *z_buf {
                     continue;
-                } else {
-                    *z_buf = z;
                 }
+                *z_buf = z;
 
                 let fragment = Fragment {
                     pos: Vec3::new(p_ndc.x, p_ndc.y, z),
@@ -118,8 +129,16 @@ impl Framebuffer {
 
                 let color = frag.shade(fragment);
 
-                self.set_pixel(p, color);
+                match color.a {
+                    255 => self.set_pixel(p, color),
+                    1..255 => self.blend_pixel(p, color),
+                    _ => (),
+                }
             }
+
+            base_e_ab += ab_step.x;
+            base_e_bc += bc_step.x;
+            base_e_ca += ca_step.x;
         }
     }
 }

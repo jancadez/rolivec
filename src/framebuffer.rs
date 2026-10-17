@@ -98,6 +98,6 @@ impl Framebuffer {
     }
 
     pub fn clear_z(&mut self) {
-        (&mut self.z_buffer).fill(f32::MIN);
+        (&mut self.z_buffer).fill(f32::MAX);
     }
 }
