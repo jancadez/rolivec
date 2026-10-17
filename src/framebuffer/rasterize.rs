@@ -1,4 +1,4 @@
-use crate::{Color, Framebuffer, IMat2, IVec2, Vec2, Vec3, Vec4};
+use crate::{Color, Framebuffer, IMat2, IVec2, Mesh, Vec2, Vec3, Vec4};
 
 #[derive(Clone, Copy)]
 pub struct Fragment {
@@ -15,6 +15,25 @@ pub trait FragmentShader {
 }
 
 impl Framebuffer {
+    pub fn render_mesh(
+        &mut self,
+        mesh: &Mesh,
+        vert: &impl VertexShader,
+        frag: &impl FragmentShader,
+    ) {
+        for (a, b, c) in mesh.indices.iter().copied() {
+            self.triangle(
+                [
+                    mesh.vertices[a],
+                    mesh.vertices[b],
+                    mesh.vertices[c],
+                ],
+                vert,
+                frag,
+            );
+        }
+    }
+
     pub fn triangle(
         &mut self,
         vertices: [Vec3; 3],
@@ -48,8 +67,14 @@ impl Framebuffer {
         let (start, end) = self.bounding_box(a_scr, b_scr, c_scr);
 
         let triangle_det = IMat2::new(b_scr - a_scr, c_scr - a_scr).determinant();
+        if triangle_det == 0 {
+            return;
+        }
+
         let inv_det = 1.0 / triangle_det as f32;
-        let winding = triangle_det.signum();
+        if triangle_det.signum() == 1 {
+            return;
+        }
 
         for x in start.x..=end.x {
             for y in start.y..=end.y {
@@ -59,7 +84,7 @@ impl Framebuffer {
                 let e_bc = IMat2::new(c_scr - b_scr, p - b_scr).determinant();
                 let e_ca = IMat2::new(a_scr - c_scr, p - c_scr).determinant();
 
-                if e_ab * winding < 0 || e_bc * winding < 0 || e_ca * winding < 0 {
+                if -e_ab < 0 || -e_bc < 0 || -e_ca < 0 {
                     continue;
                 }
 
@@ -69,6 +94,15 @@ impl Framebuffer {
 
                 let p_ndc = self.screen_to_ndc(p);
                 let z = a.z * wa + b.z * wb + c.z * wc;
+                let Some(z_buf) = self.z_mut(p) else {
+                    continue;
+                };
+
+                if z < *z_buf {
+                    continue;
+                } else {
+                    *z_buf = z;
+                }
 
                 let fragment = Fragment {
                     pos: Vec3::new(p_ndc.x, p_ndc.y, z),

@@ -7,6 +7,9 @@ pub use framebuffer::Framebuffer;
 use framebuffer::{draw2d, pixel, rasterize};
 pub use rasterize::{Fragment, FragmentShader, VertexShader};
 
+mod mesh;
+pub use mesh::{Mesh};
+
 mod math;
 use math::{imat2, mat2, mat3, mat4};
 use math::{ivec2, vec2, vec3, vec4};

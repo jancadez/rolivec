@@ -20,8 +20,8 @@ impl Mat4 {
         let g = 1.0 / tan_half_fov;
 
         let inv = 1.0 / (n - f);
-        let scale = (f + n) * inv;
-        let offset = (2.0 * f * n) * inv;
+        let scale = -((f + n) * inv);
+        let offset = -((2.0 * f * n) * inv);
 
         Mat4::new(
             Vec4::new(g / aspect, 0.0, 0.0, 0.0),

@@ -11,6 +11,7 @@ pub struct Framebuffer {
     pub(crate) inv_width: f32,
     pub(crate) inv_height: f32,
     pub(crate) pixels: Box<[Color]>,
+    pub(crate) z_buffer: Box<[f32]>,
 }
 
 impl Framebuffer {
@@ -46,6 +47,7 @@ impl Framebuffer {
             inv_width: 1.0 / denom_x,
             inv_height: 1.0 / denom_y,
             pixels: vec![Color::rgb(0, 0, 0); pixels].into_boxed_slice(),
+            z_buffer: vec![f32::MIN; pixels].into_boxed_slice(),
         }
     }
 
@@ -83,7 +85,19 @@ impl Framebuffer {
         self.map_idx(p).map(|idx| &mut self.pixels[idx])
     }
 
+    pub(crate) fn get_z(&self, p: IVec2) -> Option<f32> {
+        self.map_idx(p).map(|idx| self.z_buffer[idx])
+    }
+
+    pub(crate) fn z_mut(&mut self, p: IVec2) -> Option<&mut f32> {
+        self.map_idx(p).map(|idx| &mut self.z_buffer[idx])
+    }
+
     pub fn clear(&mut self, color: Color) {
         (&mut *self.pixels).fill(color);
+    }
+
+    pub fn clear_z(&mut self) {
+        (&mut self.z_buffer).fill(f32::MIN);
     }
 }
