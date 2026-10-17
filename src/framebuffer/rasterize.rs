@@ -1,5 +1,4 @@
 use crate::{Color, Framebuffer, IMat2, IVec2, Mesh, Vec2, Vec3, Vec4};
-
 #[derive(Clone, Copy)]
 pub struct Fragment {
     pub pos: Vec3,
@@ -21,16 +20,13 @@ impl Framebuffer {
         vert: &impl VertexShader,
         frag: &impl FragmentShader,
     ) {
+        let clip_vertices = mesh
+            .vertices
+            .iter()
+            .map(|&v| vert.transform(v))
+            .collect::<Vec<_>>();
         for (a, b, c) in mesh.indices.iter().copied() {
-            self.triangle(
-                [
-                    mesh.vertices[a],
-                    mesh.vertices[b],
-                    mesh.vertices[c],
-                ],
-                vert,
-                frag,
-            );
+            self.rasterize_triangle([clip_vertices[a], clip_vertices[b], clip_vertices[c]], frag);
         }
     }
 
@@ -40,11 +36,22 @@ impl Framebuffer {
         vert: &impl VertexShader,
         frag: &impl FragmentShader,
     ) {
-        let a_clip = vert.transform(vertices[0]);
-        let b_clip = vert.transform(vertices[1]);
-        let c_clip = vert.transform(vertices[2]);
+        self.rasterize_triangle(
+            [
+                vert.transform(vertices[0]),
+                vert.transform(vertices[1]),
+                vert.transform(vertices[2]),
+            ],
+            frag,
+        )
+    }
 
-        for v in [a_clip, b_clip, c_clip] {
+    pub(crate) fn rasterize_triangle(
+        &mut self,
+        clip_vertices: [Vec4; 3],
+        frag: &impl FragmentShader,
+    ) {
+        for v in clip_vertices {
             if v.x < -v.w || v.x > v.w {
                 return;
             }
@@ -56,9 +63,9 @@ impl Framebuffer {
             }
         }
 
-        let a = a_clip.project();
-        let b = b_clip.project();
-        let c = c_clip.project();
+        let a = clip_vertices[0].project();
+        let b = clip_vertices[1].project();
+        let c = clip_vertices[2].project();
 
         let a_scr = self.screen(Vec2::new(a.x, a.y));
         let b_scr = self.screen(Vec2::new(b.x, b.y));
