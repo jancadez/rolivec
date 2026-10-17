@@ -8,6 +8,8 @@ use crate::{Color, IVec2, Vec2};
 pub struct Framebuffer {
     pub(crate) width: usize,
     pub(crate) height: usize,
+    pub(crate) inv_width: f32,
+    pub(crate) inv_height: f32,
     pub(crate) pixels: Box<[Color]>,
 }
 
@@ -35,10 +37,15 @@ impl Framebuffer {
             panic!("Framebuffer width and height can't be 0");
         }
 
+        let denom_x = if width > 1 { (width - 1) as f32 } else { 1.0 };
+        let denom_y = if height > 1 { (height - 1) as f32 } else { 1.0 };
+
         Self {
-            width: width,
-            height: height,
-            pixels: vec![Color::rgb(0, 0, 0); width * height].into_boxed_slice(),
+            width,
+            height,
+            inv_width: 1.0 / denom_x,
+            inv_height: 1.0 / denom_y,
+            pixels: vec![Color::rgb(0, 0, 0); pixels].into_boxed_slice(),
         }
     }
 
@@ -49,16 +56,25 @@ impl Framebuffer {
     }
 
     pub(crate) fn screen(&self, p: Vec2) -> IVec2 {
-        let x = ((p.x + 1.0) / 2.0 * (self.width - 1) as f32).round();
-        let y = ((1.0 - (p.y + 1.0) / 2.0) * (self.height - 1) as f32).round();
-        IVec2::new(x as i32, y as i32)
+        let x = ((p.x + 1.0) / 2.0 * (self.width - 1) as f32).round() as i32;
+        let y = ((1.0 - (p.y + 1.0) / 2.0) * (self.height - 1) as f32).round() as i32;
+        IVec2::new(x, y)
+    }
+
+    pub(crate) fn screen_to_ndc(&self, p: IVec2) -> Vec2 {
+        let x = (p.x as f32 * self.inv_width * 2.0) - 1.0;
+        let y = 1.0 - (p.y as f32 * self.inv_height * 2.0);
+        Vec2::new(x, y)
     }
 
     pub(crate) fn bounding_box(&self, a: IVec2, b: IVec2, c: IVec2) -> (IVec2, IVec2) {
-        let min_x = a.x.min(b.x.min(c.x));
-        let min_y = a.y.min(b.y.min(c.y));
-        let max_x = a.x.max(b.x.max(c.x));
-        let max_y = a.y.max(b.y.max(c.y));
+        let max_w = self.width as i32 - 1;
+        let max_h = self.height as i32 - 1;
+
+        let min_x = a.x.min(b.x.min(c.x)).clamp(0, max_w);
+        let min_y = a.y.min(b.y.min(c.y)).clamp(0, max_h);
+        let max_x = a.x.max(b.x.max(c.x)).clamp(0, max_w);
+        let max_y = a.y.max(b.y.max(c.y)).clamp(0, max_h);
 
         (IVec2::new(min_x, min_y), IVec2::new(max_x, max_y))
     }

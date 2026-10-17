@@ -1,41 +1,84 @@
-use crate::{Color, Framebuffer, IVec2, Mat3, Vec3};
+use crate::{Color, Framebuffer, IMat2, IVec2, Vec2, Vec3, Vec4};
 
 #[derive(Clone, Copy)]
 pub struct Fragment {
-    pos: Vec3,
-    bary: Vec3,
+    pub pos: Vec3,
+    pub bary: Vec3,
 }
 
 pub trait VertexShader {
-    fn transform(&self, verts: Vec3) -> Vec3;
+    fn transform(&self, vert: Vec3) -> Vec4;
 }
 
 pub trait FragmentShader {
-    fn transform(&self, frag: Fragment) -> Color;
+    fn shade(&self, frag: Fragment) -> Color;
 }
 
 impl Framebuffer {
-    pub(crate) fn triangle(
+    pub fn triangle(
         &mut self,
         vertices: [Vec3; 3],
         vert: &impl VertexShader,
         frag: &impl FragmentShader,
     ) {
-        let a = vertices[0];
-        let b = vertices[1];
-        let c = vertices[2];
+        let a_clip = vert.transform(vertices[0]);
+        let b_clip = vert.transform(vertices[1]);
+        let c_clip = vert.transform(vertices[2]);
 
-        let bounding_box = self.bounding_box(
-            IVec2::new(a.x as i32, a.y as i32),
-            IVec2::new(b.x as i32, b.y as i32),
-            IVec2::new(c.x as i32, c.y as i32),
-        );
+        for v in [a_clip, b_clip, c_clip] {
+            if v.x < -v.w || v.x > v.w {
+                return;
+            }
+            if v.y < -v.w || v.y > v.w {
+                return;
+            }
+            if v.z < -v.w || v.z > v.w {
+                return;
+            }
+        }
 
-        let Some(start) = self.map_idx(bounding_box.0) else {
-            return;
-        };
-        let Some(end) = self.map_idx(bounding_box.1) else {
-            return;
-        };
+        let a = a_clip.project();
+        let b = b_clip.project();
+        let c = c_clip.project();
+
+        let a_scr = self.screen(Vec2::new(a.x, a.y));
+        let b_scr = self.screen(Vec2::new(b.x, b.y));
+        let c_scr = self.screen(Vec2::new(c.x, c.y));
+
+        let (start, end) = self.bounding_box(a_scr, b_scr, c_scr);
+
+        let triangle_det = IMat2::new(b_scr - a_scr, c_scr - a_scr).determinant();
+        let inv_det = 1.0 / triangle_det as f32;
+        let winding = triangle_det.signum();
+
+        for x in start.x..=end.x {
+            for y in start.y..=end.y {
+                let p = IVec2::new(x, y);
+
+                let e_ab = IMat2::new(b_scr - a_scr, p - a_scr).determinant();
+                let e_bc = IMat2::new(c_scr - b_scr, p - b_scr).determinant();
+                let e_ca = IMat2::new(a_scr - c_scr, p - c_scr).determinant();
+
+                if e_ab * winding < 0 || e_bc * winding < 0 || e_ca * winding < 0 {
+                    continue;
+                }
+
+                let wa = e_bc as f32 * inv_det;
+                let wb = e_ca as f32 * inv_det;
+                let wc = e_ab as f32 * inv_det;
+
+                let p_ndc = self.screen_to_ndc(p);
+                let z = a.z * wa + b.z * wb + c.z * wc;
+
+                let fragment = Fragment {
+                    pos: Vec3::new(p_ndc.x, p_ndc.y, z),
+                    bary: Vec3::new(wa, wb, wc),
+                };
+
+                let color = frag.shade(fragment);
+
+                self.set_pixel(p, color);
+            }
+        }
     }
 }
