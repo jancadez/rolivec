@@ -91,15 +91,15 @@ impl Framebuffer {
         let bc_step = IVec2::new(b_scr.y - c_scr.y, c_scr.x - b_scr.x);
         let ca_step = IVec2::new(c_scr.y - a_scr.y, a_scr.x - c_scr.x);
 
-        for x in start.x..=end.x {
-            let mut e_ab = base_e_ab - ab_step.y;
-            let mut e_bc = base_e_bc - bc_step.y;
-            let mut e_ca = base_e_ca - ca_step.y;
+        for y in start.y..=end.y {
+            let mut e_ab = base_e_ab - ab_step.x;
+            let mut e_bc = base_e_bc - bc_step.x;
+            let mut e_ca = base_e_ca - ca_step.x;
 
-            for y in start.y..=end.y {
-                e_ab += ab_step.y;
-                e_bc += bc_step.y;
-                e_ca += ca_step.y;
+            for x in start.x..=end.x {
+                e_ab += ab_step.x;
+                e_bc += bc_step.x;
+                e_ca += ca_step.x;
 
                 if -e_ab < 0 || -e_bc < 0 || -e_ca < 0 {
                     continue;
@@ -136,9 +136,9 @@ impl Framebuffer {
                 }
             }
 
-            base_e_ab += ab_step.x;
-            base_e_bc += bc_step.x;
-            base_e_ca += ca_step.x;
+            base_e_ab += ab_step.y;
+            base_e_bc += bc_step.y;
+            base_e_ca += ca_step.y;
         }
     }
 }
