@@ -17,12 +17,7 @@ fn main() -> Result<()> {
 
     let mut vert = Transform {
         model: Mat4::empty(),
-        view: Mat4::new(
-            Vec4::new(1.0, 0.0, 0.0, 0.0),
-            Vec4::new(0.0, 1.0, 0.0, 0.0),
-            Vec4::new(0.0, 0.0, 1.0, 0.0),
-            Vec4::new(0.0, 0.0, -3.0, 1.0),
-        ),
+        view: Mat4::identity(),
         projection: Mat4::projection(PI / 2.0, WIDTH as f32 / HEIGHT as f32, 0.1, 100.0),
     };
     let frag = Shade;
@@ -31,22 +26,10 @@ fn main() -> Result<()> {
     const d_rad: f32 = f32::consts::PI / 2.0;
     const dt: f32 = 1.0 / fps;
     let mut deg = 0.0;
+    let mut trans_z = Mat4::translate(0.0, 0.0, -4.0);
 
     while deg < 4.0 * f32::consts::PI {
-        let rot_xz = Mat4::new(
-            Vec4::new(deg.cos(), 0.0, -deg.sin(), 0.0),
-            Vec4::new(0.0, 1.0, 0.0, 0.0),
-            Vec4::new(deg.sin(), 0.0, deg.cos(), 0.0),
-            Vec4::new(0.0, 0.0, 0.0, 1.0),
-        );
-        let rot_xy = Mat4::new(
-            Vec4::new(deg.cos(), deg.sin(), 0.0, 0.0),
-            Vec4::new(-deg.sin(), deg.cos(), 0.0, 0.0),
-            Vec4::new(0.0, 0.0, 1.0, 0.0),
-            Vec4::new(0.0, 0.0, 0.0, 1.0),
-        );
-
-        vert.model = rot_xz * rot_xy;
+        vert.model = trans_z * Mat4::rot_xz(deg) * Mat4::rot_xy(deg);
         fb.clear(Color::BLACK);
         fb.clear_z();
         fb.render_mesh(&mesh, &vert, &frag);
