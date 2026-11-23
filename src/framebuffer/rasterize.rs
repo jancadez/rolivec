@@ -10,7 +10,7 @@ pub trait VertexShader {
 }
 
 pub trait FragmentShader {
-    fn shade(&self, frag: Fragment) -> Color;
+    fn shade(&self, frag: Fragment) -> Option<Color>;
 }
 
 impl Framebuffer {
@@ -127,13 +127,9 @@ impl Framebuffer {
                     bary: Vec3::new(wa, wb, wc),
                 };
 
-                let color = frag.shade(fragment);
-
-                match color.a {
-                    255 => self.set_pixel(p, color),
-                    1..255 => self.blend_pixel(p, color),
-                    _ => (),
-                }
+                if let Some(color) = frag.shade(fragment) {
+                    self.set_pixel(p, color);
+                };
             }
 
             base_e_ab += ab_step.y;

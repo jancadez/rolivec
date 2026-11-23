@@ -1,6 +1,5 @@
 use rolivec::{
-    Color, Fragment, FragmentShader, Framebuffer, Mat4, Mesh, MeshError, Vec3, Vec4,
-    VertexShader,
+    Color, Fragment, FragmentShader, Framebuffer, Mat4, Mesh, MeshError, Vec3, Vec4, VertexShader,
 };
 
 use minifb::{Window, WindowOptions};
@@ -113,10 +112,10 @@ impl VertexShader for Transform {
 
 struct Shade;
 impl FragmentShader for Shade {
-    fn shade(&self, frag: Fragment) -> Color {
+    fn shade(&self, frag: Fragment) -> Option<Color> {
         let r = (frag.bary.x * 255.0).round() as u8;
         let g = (frag.bary.y * 255.0).round() as u8;
         let b = (frag.bary.z * 255.0).round() as u8;
-        Color::rgb(r, g, b)
+        Some(Color::rgb(r, g, b))
     }
 }

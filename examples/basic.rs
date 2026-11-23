@@ -12,11 +12,11 @@ impl VertexShader for Transform {
 
 struct Shade;
 impl FragmentShader for Shade {
-    fn shade(&self, frag: Fragment) -> Color {
+    fn shade(&self, frag: Fragment) -> Option<Color> {
         let r = (frag.bary.x * 255.0).round() as u8;
         let g = (frag.bary.y * 255.0).round() as u8;
         let b = (frag.bary.z * 255.0).round() as u8;
-        Color::rgb(r, g, b)
+        Some(Color::rgb(r, g, b))
     }
 }
 
@@ -28,18 +28,13 @@ fn main() -> Result<()> {
     fb.clear(Color::BLUE);
     write(&fb)?;
 
-    fb.set_line(Vec2::new(-1.0, -1.0), Vec2::new(1.0, 1.0), Color::ORANGE);
+    fb.line(Vec2::new(-1.0, -1.0), Vec2::new(1.0, 1.0), Color::ORANGE, 255);
     write(&fb)?;
 
-    fb.set_rectangle(Vec2::new(-1.0, -1.0), Vec2::new(-0.5, -0.5), Color::LIME);
+    fb.rectangle(Vec2::new(-1.0, -1.0), Vec2::new(-0.5, -0.5), Color::LIME, 255);
     write(&fb)?;
 
-    let lavender = Color {
-        a: 100,
-        ..Color::LAVENDER
-    };
-
-    fb.draw_rectangle(Vec2::new(-0.25, -0.25), Vec2::new(-0.75, -0.75), lavender);
+    fb.rectangle(Vec2::new(-0.25, -0.25), Vec2::new(-0.75, -0.75), Color::LAVENDER, 100);
     write(&fb)?;
 
     let vert = Transform;
