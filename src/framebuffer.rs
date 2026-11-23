@@ -47,7 +47,7 @@ impl Framebuffer {
             inv_width: 1.0 / denom_x,
             inv_height: 1.0 / denom_y,
             pixels: vec![Color::rgb(0, 0, 0); pixels].into_boxed_slice(),
-            z_buffer: vec![f32::MIN; pixels].into_boxed_slice(),
+            z_buffer: vec![f32::MAX; pixels].into_boxed_slice(),
         }
     }
 
