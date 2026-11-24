@@ -3,5 +3,6 @@ name = "rolivec"
 version = "0.1.0"
 edition = "2024"
 
-[dependencies]
+[dev-dependencies]
 minifb = "0.29.0"
+sdl3 = "0.22.1"

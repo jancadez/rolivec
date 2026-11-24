@@ -2,6 +2,7 @@ pub mod draw2d;
 pub mod pixel;
 pub mod rasterize;
 pub mod shade;
+pub mod export;
 
 use crate::{Color, I64Vec2, IVec2, Vec2};
 

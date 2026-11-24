@@ -1,5 +1,5 @@
 use crate::{
-    Fragment, FragmentShader, Framebuffer, I64Mat2, I64Vec2, IMat2, IVec2, Mesh, Vec2, Vec3, Vec4,
+    Fragment, FragmentShader, Framebuffer, I64Mat2, I64Vec2, IVec2, Mesh, Vec2, Vec3, Vec4,
     VertexShader,
 };
 
