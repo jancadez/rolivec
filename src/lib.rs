@@ -2,10 +2,10 @@ mod color;
 pub use color::Color;
 
 mod framebuffer;
-pub use framebuffer::Framebuffer;
+pub use framebuffer::{BackfaceCulling, Framebuffer};
 
 use framebuffer::{draw2d, pixel, rasterize, shade};
-pub use shade::{Fragment, FragmentShader, VertexShader, Mvp};
+pub use shade::{Fragment, FragmentShader, Mvp, VertexShader};
 
 mod mesh;
 pub use mesh::{Mesh, MeshError};
@@ -20,8 +20,8 @@ pub use mat2::Mat2;
 pub use mat3::Mat3;
 pub use mat4::Mat4;
 
-pub use ivec2::IVec2;
 pub use i64vec2::I64Vec2;
+pub use ivec2::IVec2;
 pub use vec2::Vec2;
 pub use vec3::Vec3;
 pub use vec4::Vec4;

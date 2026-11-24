@@ -6,6 +6,12 @@ pub mod export;
 
 use crate::{Color, I64Vec2, IVec2, Vec2};
 
+#[derive(Eq, PartialEq, Debug, Copy, Clone)]
+pub enum BackfaceCulling {
+    NoCulling,
+    CwCulling,
+    CcwCulling,
+}
 
 #[derive(Debug)]
 pub struct Framebuffer {
@@ -15,6 +21,7 @@ pub struct Framebuffer {
     inv_height: f32,
     pixels: Box<[Color]>,
     z_buffer: Box<[f32]>,
+    culling: BackfaceCulling,
 }
 
 impl Framebuffer {
@@ -53,7 +60,16 @@ impl Framebuffer {
             inv_height: 1.0 / denom_y,
             pixels: vec![Color::rgb(0, 0, 0); pixels].into_boxed_slice(),
             z_buffer: vec![f32::MAX; pixels].into_boxed_slice(),
+            culling: BackfaceCulling::CwCulling,
         }
+    }
+
+    pub fn get_culling(&self) -> BackfaceCulling {
+        self.culling
+    }
+
+    pub fn set_culling(&mut self, culling: BackfaceCulling) {
+        self.culling = culling;
     }
 
     pub(crate) fn map_idx(&self, p: IVec2) -> Option<usize> {

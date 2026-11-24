@@ -1,4 +1,4 @@
-use rolivec::{Color, Fragment, FragmentShader, Framebuffer, Mat4, Mesh, MeshError, Mvp, Vec3};
+use rolivec::{BackfaceCulling, Color, Fragment, FragmentShader, Framebuffer, Mat4, Mesh, MeshError, Mvp, Vec3};
 
 use sdl3::event::Event;
 use sdl3::keyboard::Keycode;
@@ -28,6 +28,7 @@ fn main() {
         .unwrap();
 
     let mut fb = Framebuffer::new(WIDTH, HEIGHT);
+    fb.set_culling(BackfaceCulling::NoCulling);
     let mesh = cube().unwrap();
 
     let mut vert = Mvp::new(
@@ -109,7 +110,7 @@ fn cube() -> std::result::Result<Mesh, MeshError> {
             Vec3::new(1.0, -1.0, -1.0),
         ],
         vec![
-            [0, 2, 1],
+            // [0, 2, 1],
             [1, 2, 3],
             [5, 6, 4],
             [7, 6, 5],
