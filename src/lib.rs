@@ -4,8 +4,8 @@ pub use color::Color;
 mod framebuffer;
 pub use framebuffer::Framebuffer;
 
-use framebuffer::{draw2d, pixel, rasterize};
-pub use rasterize::{Fragment, FragmentShader, VertexShader};
+use framebuffer::{draw2d, pixel, rasterize, shade};
+pub use shade::{Fragment, FragmentShader, VertexShader, Mvp};
 
 mod mesh;
 pub use mesh::{Mesh, MeshError};

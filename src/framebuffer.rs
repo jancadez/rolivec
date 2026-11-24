@@ -1,6 +1,7 @@
 pub mod draw2d;
 pub mod pixel;
 pub mod rasterize;
+pub mod shade;
 
 use crate::{Color, IVec2, Vec2};
 
@@ -99,5 +100,10 @@ impl Framebuffer {
 
     pub fn clear_z(&mut self) {
         (&mut self.z_buffer).fill(f32::MAX);
+    }
+
+    pub fn clear_all(&mut self, color: Color) {
+        self.clear(color);
+        self.clear_z();
     }
 }

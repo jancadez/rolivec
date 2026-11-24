@@ -1,10 +1,11 @@
 mod ppm;
 use rolivec::{
-    Color, Fragment, FragmentShader, Framebuffer, Mat3, Mat4, Mesh, MeshError, Vec3, Vec4, VertexShader
+    Color, Fragment, FragmentShader, Framebuffer, Mat3, Mat4, Mesh, MeshError, Mvp, Vec3,
+    Vec4, VertexShader,
 };
 
-use std::io::Result;
 use std::f32::{self, consts::PI};
+use std::io::Result;
 
 static WIDTH: usize = 1600;
 static HEIGHT: usize = 900;
@@ -15,23 +16,21 @@ fn main() -> Result<()> {
     let mut fb = Framebuffer::new(WIDTH, HEIGHT);
     let mesh = cube().unwrap();
 
-    let mut vert = Transform {
-        model: Mat4::empty(),
-        view: Mat4::identity(),
-        projection: Mat4::projection(PI / 2.0, WIDTH as f32 / HEIGHT as f32, 0.1, 100.0),
-    };
+    let mut vert = Mvp::new(
+        Mat4::identity(),
+        Mat4::translate(0.0, 0.0, -4.0),
+        Mat4::projection(PI / 2.0, WIDTH as f32 / HEIGHT as f32, 0.1, 100.0),
+    );
     let frag = Shade;
 
     const fps: f32 = 60.0;
     const d_rad: f32 = f32::consts::PI / 2.0;
     const dt: f32 = 1.0 / fps;
     let mut deg = 0.0;
-    let mut trans_z = Mat4::translate(0.0, 0.0, -4.0);
 
     while deg < 4.0 * f32::consts::PI {
-        vert.model = trans_z * Mat4::rot_xz(deg) * Mat4::rot_xy(deg);
-        fb.clear(Color::BLACK);
-        fb.clear_z();
+        vert.set_model(Mat4::rot_y(deg) * Mat4::rot_z(deg));
+        fb.clear_all(Color::BLACK);
         fb.render_mesh(&mesh, &vert, &frag);
         deg += dt * d_rad;
 

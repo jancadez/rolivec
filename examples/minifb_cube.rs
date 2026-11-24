@@ -1,13 +1,12 @@
 use rolivec::{
-    Color, Fragment, FragmentShader, Framebuffer, Mat4, Mesh, MeshError, Vec3, Vec4, VertexShader,
+    Color, Fragment, FragmentShader, Framebuffer, Mat4, Mesh, MeshError, Vec3, Mvp
 };
 
 use minifb::{Window, WindowOptions};
-use std::f32::{self, consts::PI};
 use std::time::{Duration, Instant};
 
-static WIDTH: usize = 1600;
-static HEIGHT: usize = 900;
+const WIDTH: usize = 1600;
+const HEIGHT: usize = 900;
 
 fn main() {
     let mut window = match Window::new("Test", WIDTH, HEIGHT, WindowOptions::default()) {
@@ -18,41 +17,50 @@ fn main() {
         }
     };
 
+    window.set_target_fps(10000);
+
     let mut fb = Framebuffer::new(WIDTH, HEIGHT);
     let mesh = cube().unwrap();
 
-    let mut vert = Transform {
-        model: Mat4::empty(),
-        view: Mat4::identity(),
-        projection: Mat4::projection(PI / 2.0, WIDTH as f32 / HEIGHT as f32, 0.1, 100.0),
-    };
+    let mut vert = Mvp::new(
+        Mat4::identity(),
+        Mat4::translate(0.0, 0.0, -4.0),
+        Mat4::projection(
+            90_f32.to_radians(),
+            WIDTH as f32 / HEIGHT as f32,
+            0.1,
+            100.0,
+        ),
+    );
     let frag = Shade;
 
-    const D_RAD: f32 = f32::consts::PI / 2.0;
+    const D_RAD: f32 = std::f32::consts::PI / 2.0;
     let mut dt = 0.0;
     let mut deg = 0.0;
-    let trans_z = Mat4::translate(0.0, 0.0, -4.0);
 
-    let mut buffer = vec![0_u32; fb.pixels().len()];
+    let mut buffer = vec![0_u32; WIDTH * HEIGHT];
 
     let mut last_time = Instant::now();
     let mut frame_count: usize = 0;
 
-    while window.is_open() {
+    while window.is_open()
+        && !(window.is_key_down(minifb::Key::Q) || window.is_key_down(minifb::Key::Escape))
+    {
         let start = Instant::now();
 
         deg += dt * D_RAD;
 
-        vert.model = trans_z * Mat4::rot_xz(deg) * Mat4::rot_xy(deg);
-        fb.clear(Color::BLACK);
-        fb.clear_z();
+        vert.set_model(Mat4::rot_y(deg) * Mat4::rot_z(deg));
+        fb.clear_all(Color::BLACK);
         fb.render_mesh(&mesh, &vert, &frag);
 
         for (dst, src) in buffer.iter_mut().zip(fb.pixels().iter()) {
             *dst = u32::from_be_bytes([0, src.r, src.g, src.b]);
         }
 
-        let _ = window.update_with_buffer(&buffer, WIDTH, HEIGHT);
+        let Ok(_) = window.update_with_buffer(&buffer, WIDTH, HEIGHT) else {
+            return;
+        };
 
         let elapsed = last_time.elapsed();
         if elapsed >= Duration::from_millis(500) {
@@ -61,10 +69,9 @@ fn main() {
 
             frame_count = 0;
             last_time = Instant::now();
-        } else {
-            frame_count += 1;
         }
 
+        frame_count += 1;
         dt = start.elapsed().as_secs_f32();
     }
 }
@@ -96,18 +103,6 @@ fn cube() -> std::result::Result<Mesh, MeshError> {
             (0, 4, 2),
         ],
     )
-}
-
-struct Transform {
-    pub model: Mat4,
-    pub view: Mat4,
-    pub projection: Mat4,
-}
-
-impl VertexShader for Transform {
-    fn transform(&self, vert: Vec3) -> Vec4 {
-        self.projection * (self.view * (self.model * Vec4::new(vert.x, vert.y, vert.z, 1.0)))
-    }
 }
 
 struct Shade;
