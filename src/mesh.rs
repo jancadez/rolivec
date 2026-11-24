@@ -4,14 +4,14 @@ use std::fmt;
 #[derive(Debug)]
 pub struct Mesh {
     pub vertices: Vec<Vec3>,
-    pub indices: Vec<(usize, usize, usize)>,
+    pub indices: Vec<[usize; 3]>,
 }
 
 #[derive(Debug)]
 pub enum MeshError {
     InvalidIndex {
         position: usize,
-        value: (usize, usize, usize),
+        value: [usize; 3],
         vertex_count: usize,
     },
 }
@@ -39,12 +39,12 @@ impl std::error::Error for MeshError {}
 impl Mesh {
     pub fn new(
         vertices: Vec<Vec3>,
-        indices: Vec<(usize, usize, usize)>,
+        indices: Vec<[usize; 3]>,
     ) -> Result<Self, MeshError> {
         let max_vertex = vertices.len();
 
         for (i, &idx) in indices.iter().enumerate() {
-            let out_of_bounds = idx.0 >= max_vertex || idx.1 >= max_vertex || idx.2 >= max_vertex;
+            let out_of_bounds = idx[0] >= max_vertex || idx[1] >= max_vertex || idx[2] >= max_vertex;
             if out_of_bounds {
                 return Err(MeshError::InvalidIndex {
                     position: i,

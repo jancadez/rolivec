@@ -15,8 +15,8 @@ impl Framebuffer {
             .iter()
             .map(|&v| vert.transform(v))
             .collect::<Vec<_>>();
-        for (a, b, c) in mesh.indices.iter().copied() {
-            self.rasterize_triangle([clip_vertices[a], clip_vertices[b], clip_vertices[c]], frag);
+        for verts in mesh.indices.iter().copied() {
+            self.rasterize_triangle(verts.map(|i| clip_vertices[i]), frag);
         }
     }
 
@@ -60,7 +60,7 @@ impl Framebuffer {
         let a_scr = self.screen(Vec2::new(a.x, a.y));
         let b_scr = self.screen(Vec2::new(b.x, b.y));
         let c_scr = self.screen(Vec2::new(c.x, c.y));
-        
+
         let a_scrf = self.screen_fine(Vec2::new(a.x, a.y));
         let b_scrf = self.screen_fine(Vec2::new(b.x, b.y));
         let c_scrf = self.screen_fine(Vec2::new(c.x, c.y));
@@ -83,9 +83,12 @@ impl Framebuffer {
         let mut base_e_bc = I64Mat2::new(c_scrf - b_scrf, startf - b_scrf).determinant();
         let mut base_e_ca = I64Mat2::new(a_scrf - c_scrf, startf - c_scrf).determinant();
 
-        let ab_step = I64Vec2::new(a_scrf.y - b_scrf.y, b_scrf.x - a_scrf.x) * Framebuffer::FINE_GRID_SCALE as i64;
-        let bc_step = I64Vec2::new(b_scrf.y - c_scrf.y, c_scrf.x - b_scrf.x) * Framebuffer::FINE_GRID_SCALE as i64;
-        let ca_step = I64Vec2::new(c_scrf.y - a_scrf.y, a_scrf.x - c_scrf.x) * Framebuffer::FINE_GRID_SCALE as i64;
+        let ab_step = I64Vec2::new(a_scrf.y - b_scrf.y, b_scrf.x - a_scrf.x)
+            * Framebuffer::FINE_GRID_SCALE as i64;
+        let bc_step = I64Vec2::new(b_scrf.y - c_scrf.y, c_scrf.x - b_scrf.x)
+            * Framebuffer::FINE_GRID_SCALE as i64;
+        let ca_step = I64Vec2::new(c_scrf.y - a_scrf.y, a_scrf.x - c_scrf.x)
+            * Framebuffer::FINE_GRID_SCALE as i64;
 
         for y in start.y..=end.y {
             let mut e_ab = base_e_ab - ab_step.x;
