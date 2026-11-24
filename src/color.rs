@@ -1,9 +1,22 @@
+use std::ops::Mul;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(C)]
 pub struct Color {
     pub r: u8,
     pub g: u8,
     pub b: u8,
+}
+
+impl Mul<f32> for Color {
+    type Output = Color;
+    fn mul(self, scalar: f32) -> Color {
+        Color::rgb(
+            (self.r as f32 * scalar) as u8,
+            (self.g as f32 * scalar) as u8,
+            (self.b as f32 * scalar) as u8,
+        )
+    }
 }
 
 #[inline]
@@ -19,7 +32,7 @@ fn mix(dst: u8, src: u8, a: u8) -> u8 {
 
 impl Color {
     pub const fn rgb(r: u8, g: u8, b: u8) -> Color {
-        Color {r, g, b}
+        Color { r, g, b }
     }
 
     pub fn blend(self, src: Color, alpha: u8) -> Color {
