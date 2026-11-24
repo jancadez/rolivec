@@ -1,5 +1,5 @@
 use crate::{
-    Fragment, FragmentShader, Framebuffer, IMat2, IVec2, Mesh, Vec2, Vec3, Vec4,
+    Fragment, FragmentShader, Framebuffer, I64Mat2, I64Vec2, IMat2, IVec2, Mesh, Vec2, Vec3, Vec4,
     VertexShader,
 };
 
@@ -60,10 +60,14 @@ impl Framebuffer {
         let a_scr = self.screen(Vec2::new(a.x, a.y));
         let b_scr = self.screen(Vec2::new(b.x, b.y));
         let c_scr = self.screen(Vec2::new(c.x, c.y));
+        
+        let a_scrf = self.screen_fine(Vec2::new(a.x, a.y));
+        let b_scrf = self.screen_fine(Vec2::new(b.x, b.y));
+        let c_scrf = self.screen_fine(Vec2::new(c.x, c.y));
 
         let (start, end) = self.bounding_box(a_scr, b_scr, c_scr);
 
-        let triangle_det = IMat2::new(b_scr - a_scr, c_scr - a_scr).determinant();
+        let triangle_det = I64Mat2::new(b_scrf - a_scrf, c_scrf - a_scrf).determinant();
         if triangle_det == 0 {
             return;
         }
@@ -73,13 +77,15 @@ impl Framebuffer {
             return;
         }
 
-        let mut base_e_ab = IMat2::new(b_scr - a_scr, start - a_scr).determinant();
-        let mut base_e_bc = IMat2::new(c_scr - b_scr, start - b_scr).determinant();
-        let mut base_e_ca = IMat2::new(a_scr - c_scr, start - c_scr).determinant();
+        let startf = self.to_fine(start);
 
-        let ab_step = IVec2::new(a_scr.y - b_scr.y, b_scr.x - a_scr.x);
-        let bc_step = IVec2::new(b_scr.y - c_scr.y, c_scr.x - b_scr.x);
-        let ca_step = IVec2::new(c_scr.y - a_scr.y, a_scr.x - c_scr.x);
+        let mut base_e_ab = I64Mat2::new(b_scrf - a_scrf, startf - a_scrf).determinant();
+        let mut base_e_bc = I64Mat2::new(c_scrf - b_scrf, startf - b_scrf).determinant();
+        let mut base_e_ca = I64Mat2::new(a_scrf - c_scrf, startf - c_scrf).determinant();
+
+        let ab_step = I64Vec2::new(a_scrf.y - b_scrf.y, b_scrf.x - a_scrf.x) * Framebuffer::FINE_GRID_SCALE as i64;
+        let bc_step = I64Vec2::new(b_scrf.y - c_scrf.y, c_scrf.x - b_scrf.x) * Framebuffer::FINE_GRID_SCALE as i64;
+        let ca_step = I64Vec2::new(c_scrf.y - a_scrf.y, a_scrf.x - c_scrf.x) * Framebuffer::FINE_GRID_SCALE as i64;
 
         for y in start.y..=end.y {
             let mut e_ab = base_e_ab - ab_step.x;

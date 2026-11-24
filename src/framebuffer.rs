@@ -3,19 +3,22 @@ pub mod pixel;
 pub mod rasterize;
 pub mod shade;
 
-use crate::{Color, IVec2, Vec2};
+use crate::{Color, I64Vec2, IVec2, Vec2};
+
 
 #[derive(Debug)]
 pub struct Framebuffer {
-    pub(crate) width: usize,
-    pub(crate) height: usize,
-    pub(crate) inv_width: f32,
-    pub(crate) inv_height: f32,
-    pub(crate) pixels: Box<[Color]>,
-    pub(crate) z_buffer: Box<[f32]>,
+    width: usize,
+    height: usize,
+    inv_width: f32,
+    inv_height: f32,
+    pixels: Box<[Color]>,
+    z_buffer: Box<[f32]>,
 }
 
 impl Framebuffer {
+    pub const FINE_GRID_SCALE: usize = 16;
+
     pub fn width(&self) -> usize {
         self.width
     }
@@ -59,9 +62,23 @@ impl Framebuffer {
     }
 
     pub(crate) fn screen(&self, p: Vec2) -> IVec2 {
-        let x = ((p.x + 1.0) / 2.0 * (self.width - 1) as f32).round() as i32;
-        let y = ((1.0 - (p.y + 1.0) / 2.0) * (self.height - 1) as f32).round() as i32;
+        let x = ((p.x + 1.0) * 0.5 * (self.width - 1) as f32).round() as i32;
+        let y = ((1.0 - (p.y + 1.0) * 0.5) * (self.height - 1) as f32).round() as i32;
         IVec2::new(x, y)
+    }
+
+    pub(crate) fn screen_fine(&self, p: Vec2) -> I64Vec2 {
+        let x = ((p.x + 1.0) * 0.5 * ((self.width - 1) * Framebuffer::FINE_GRID_SCALE) as f32).round() as i64;
+        let y =
+            ((1.0 - (p.y + 1.0) * 0.5) * ((self.height - 1) * Framebuffer::FINE_GRID_SCALE) as f32).round() as i64;
+        I64Vec2::new(x, y)
+    }
+
+    pub(crate) fn to_fine(&self, p: IVec2) -> I64Vec2 {
+        I64Vec2::new(
+            p.x as i64 * Framebuffer::FINE_GRID_SCALE as i64,
+            p.y as i64 * Framebuffer::FINE_GRID_SCALE as i64,
+        )
     }
 
     pub(crate) fn screen_to_ndc(&self, p: IVec2) -> Vec2 {
