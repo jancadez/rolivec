@@ -22,8 +22,8 @@ impl Mul for IMat2 {
     type Output = IMat2;
     fn mul(self, rhs: IMat2) -> IMat2 {
         IMat2::new(
-            self * IVec2::new(rhs.x.x, rhs.x.y),
-            self * IVec2::new(rhs.y.x, rhs.y.y),
+            self * rhs.x,
+            self * rhs.y,
         )
     }
 }

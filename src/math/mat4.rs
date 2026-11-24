@@ -49,9 +49,21 @@ impl Mat4 {
         )
     }
 
-    pub fn rot_xz(deg: f32) -> Mat4 {
-        let cos = deg.cos();
-        let sin = deg.sin();
+    pub fn rot_x(rad: f32) -> Mat4 {
+        let cos = rad.cos();
+        let sin = rad.sin();
+
+        Mat4::new(
+            Vec4::new(1.0, 0.0, 0.0, 0.0),
+            Vec4::new(0.0, cos, sin, 0.0),
+            Vec4::new(0.0, -sin, cos, 0.0),
+            Vec4::new(0.0, 0.0, 0.0, 1.0),
+        )
+    }
+
+    pub fn rot_y(rad: f32) -> Mat4 {
+        let cos = rad.cos();
+        let sin = rad.sin();
 
         Mat4::new(
             Vec4::new(cos, 0.0, -sin, 0.0),
@@ -61,26 +73,14 @@ impl Mat4 {
         )
     }
 
-    pub fn rot_xy(deg: f32) -> Mat4 {
-        let cos = deg.cos();
-        let sin = deg.sin();
+    pub fn rot_z(rad: f32) -> Mat4 {
+        let cos = rad.cos();
+        let sin = rad.sin();
 
         Mat4::new(
             Vec4::new(cos, sin, 0.0, 0.0),
             Vec4::new(-sin, cos, 0.0, 0.0),
             Vec4::new(0.0, 0.0, 1.0, 0.0),
-            Vec4::new(0.0, 0.0, 0.0, 1.0),
-        )
-    }
-
-    pub fn rot_yz(deg: f32) -> Mat4 {
-        let cos = deg.cos();
-        let sin = deg.sin();
-
-        Mat4::new(
-            Vec4::new(1.0, 0.0, 0.0, 0.0),
-            Vec4::new(0.0, cos, sin, 0.0),
-            Vec4::new(0.0, -sin, cos, 0.0),
             Vec4::new(0.0, 0.0, 0.0, 1.0),
         )
     }
@@ -99,10 +99,10 @@ impl Mul for Mat4 {
     type Output = Mat4;
     fn mul(self, rhs: Mat4) -> Mat4 {
         Mat4::new(
-            self * Vec4::new(rhs.x.x, rhs.x.y, rhs.x.z, rhs.x.w),
-            self * Vec4::new(rhs.y.x, rhs.y.y, rhs.y.z, rhs.y.w),
-            self * Vec4::new(rhs.z.x, rhs.z.y, rhs.z.z, rhs.z.w),
-            self * Vec4::new(rhs.w.x, rhs.w.y, rhs.w.z, rhs.w.w),
+            self * rhs.x,
+            self * rhs.y,
+            self * rhs.z,
+            self * rhs.w,
         )
     }
 }

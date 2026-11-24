@@ -19,9 +19,9 @@ impl Mul for Mat3 {
     type Output = Mat3;
     fn mul(self, rhs: Mat3) -> Mat3 {
         Mat3::new(
-            self * Vec3::new(rhs.x.x, rhs.x.y, rhs.x.z),
-            self * Vec3::new(rhs.y.x, rhs.y.y, rhs.y.z),
-            self * Vec3::new(rhs.z.x, rhs.z.y, rhs.z.z),
+            self * rhs.x,
+            self * rhs.y,
+            self * rhs.z,
         )
     }
 }
