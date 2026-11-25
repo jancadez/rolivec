@@ -1,6 +1,4 @@
-use rolivec::{
-    Color, Fragment, FragmentShader, Framebuffer, Mat4, Mesh, MeshError, Vec3, Mvp
-};
+use rolivec::{Color, Fragment, FragmentShader, Framebuffer, Mat4, Mesh, MeshError, Mvp, Vec3};
 
 use minifb::{Window, WindowOptions};
 use std::time::{Duration, Instant};

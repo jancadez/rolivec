@@ -1,5 +1,6 @@
 pub mod clip;
 pub mod draw2d;
+pub mod draw3d;
 pub mod export;
 pub mod pixel;
 pub mod rasterize;

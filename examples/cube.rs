@@ -1,7 +1,7 @@
 mod ppm;
 use rolivec::{
-    Color, Fragment, FragmentShader, Framebuffer, Mat3, Mat4, Mesh, MeshError, Mvp, Vec3,
-    Vec4, VertexShader,
+    Color, Fragment, FragmentShader, Framebuffer, Mat3, Mat4, Mesh, MeshError, Mvp, Vec3, Vec4,
+    VertexShader,
 };
 
 use std::f32::{self, consts::PI};
@@ -19,7 +19,12 @@ fn main() -> Result<()> {
     let mut vert = Mvp::new(
         Mat4::identity(),
         Mat4::translate(0.0, 0.0, -2.0),
-        Mat4::projection(90_f32.to_radians(), WIDTH as f32 / HEIGHT as f32, 0.1, 100.0),
+        Mat4::projection(
+            90_f32.to_radians(),
+            WIDTH as f32 / HEIGHT as f32,
+            0.1,
+            100.0,
+        ),
     );
     let frag = Shade;
 

@@ -18,11 +18,7 @@ impl Mat3 {
 impl Mul for Mat3 {
     type Output = Mat3;
     fn mul(self, rhs: Mat3) -> Mat3 {
-        Mat3::new(
-            self * rhs.x,
-            self * rhs.y,
-            self * rhs.z,
-        )
+        Mat3::new(self * rhs.x, self * rhs.y, self * rhs.z)
     }
 }
 

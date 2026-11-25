@@ -4,7 +4,7 @@ pub use color::Color;
 mod framebuffer;
 pub use framebuffer::{BackfaceCulling, Framebuffer};
 
-use framebuffer::{clip, draw2d, export, pixel, rasterize, shade};
+use framebuffer::{clip, shade};
 pub use shade::{Fragment, FragmentShader, Mvp, VertexShader};
 
 mod mesh;

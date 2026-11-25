@@ -28,13 +28,28 @@ fn main() -> Result<()> {
     fb.clear(Color::BLUE);
     write(&fb)?;
 
-    fb.line(Vec2::new(-1.0, -1.0), Vec2::new(1.0, 1.0), Color::ORANGE, 255);
+    fb.line(
+        Vec2::new(-1.0, -1.0),
+        Vec2::new(1.0, 1.0),
+        Color::ORANGE,
+        255,
+    );
     write(&fb)?;
 
-    fb.rectangle(Vec2::new(-1.0, -1.0), Vec2::new(-0.5, -0.5), Color::LIME, 255);
+    fb.rectangle(
+        Vec2::new(-1.0, -1.0),
+        Vec2::new(-0.5, -0.5),
+        Color::LIME,
+        255,
+    );
     write(&fb)?;
 
-    fb.rectangle(Vec2::new(-0.25, -0.25), Vec2::new(-0.75, -0.75), Color::LAVENDER, 100);
+    fb.rectangle(
+        Vec2::new(-0.25, -0.25),
+        Vec2::new(-0.75, -0.75),
+        Color::LAVENDER,
+        100,
+    );
     write(&fb)?;
 
     let vert = Transform;

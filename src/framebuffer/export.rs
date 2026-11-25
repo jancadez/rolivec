@@ -1,4 +1,4 @@
-use crate::{Color, Framebuffer, IVec2, Vec2};
+use crate::{Color, Framebuffer};
 
 impl Framebuffer {
     pub fn rgb24_into(&self, buf: &mut [u8], pitch: Option<usize>) {

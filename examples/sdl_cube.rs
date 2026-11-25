@@ -21,7 +21,7 @@ fn main() {
     let mut canvas = window.into_canvas();
     let mut event_pump = sdl_context.event_pump().unwrap();
     let mut i = 0;
-    
+
     let texture_creator = canvas.texture_creator();
     let mut texture = texture_creator
         .create_texture_streaming(PixelFormat::RGB24, WIDTH as u32, HEIGHT as u32)

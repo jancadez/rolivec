@@ -98,12 +98,7 @@ impl Mat4 {
 impl Mul for Mat4 {
     type Output = Mat4;
     fn mul(self, rhs: Mat4) -> Mat4 {
-        Mat4::new(
-            self * rhs.x,
-            self * rhs.y,
-            self * rhs.z,
-            self * rhs.w,
-        )
+        Mat4::new(self * rhs.x, self * rhs.y, self * rhs.z, self * rhs.w)
     }
 }
 
