@@ -7,7 +7,7 @@ impl Framebuffer {
         match pitch {
             None | Some(0) => {
                 let src_bytes = unsafe {
-                    std::slice::from_raw_parts(self.pixels.as_ptr() as *const u8, row_sz)
+                    std::slice::from_raw_parts(self.pixels.as_ptr() as *const u8, row_sz * self.height)
                 };
 
                 buf.copy_from_slice(src_bytes);
@@ -19,8 +19,8 @@ impl Framebuffer {
         let pitch = pitch.unwrap();
 
         for y in 0..self.height {
-            let dest_start = y * pitch;
-            let dest_slice = &mut buf[dest_start..dest_start + row_sz];
+            let dst_start = y * pitch;
+            let dst_slice = &mut buf[dst_start..dst_start + row_sz];
 
             let src_start = y * self.width;
             let src_slice = &self.pixels[src_start..src_start + self.width];
@@ -28,7 +28,7 @@ impl Framebuffer {
             let src_bytes =
                 unsafe { std::slice::from_raw_parts(src_slice.as_ptr() as *const u8, row_sz) };
 
-            dest_slice.copy_from_slice(src_bytes);
+            dst_slice.copy_from_slice(src_bytes);
         }
     }
 }
