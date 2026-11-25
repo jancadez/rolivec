@@ -56,7 +56,7 @@ impl Framebuffer {
         self.rasterize_triangle(setup, frag);
     }
 
-    fn setup_triangle(&mut self, vs: [ClipVertex; 3]) -> Option<TriangleSetup> {
+    fn setup_triangle(&self, vs: [ClipVertex; 3]) -> Option<TriangleSetup> {
         let a = TriangleVertex::new(vs[0]);
         let b = TriangleVertex::new(vs[1]);
         let c = TriangleVertex::new(vs[2]);
@@ -64,13 +64,6 @@ impl Framebuffer {
         let a_scr = self.screen_fine(Vec2::new(a.pos.x, a.pos.y));
         let b_scr = self.screen_fine(Vec2::new(b.pos.x, b.pos.y));
         let c_scr = self.screen_fine(Vec2::new(c.pos.x, c.pos.y));
-
-        let (start, end) = self.bounding_box([
-            Vec2::new(a.pos.x, a.pos.y),
-            Vec2::new(b.pos.x, b.pos.y),
-            Vec2::new(c.pos.x, c.pos.y),
-        ]);
-        let startf = self.to_fine(start);
 
         let det = I64Mat2::new(b_scr - a_scr, c_scr - a_scr).determinant();
         let sign;
@@ -93,9 +86,34 @@ impl Framebuffer {
             _ => return None,
         }
 
-        let eab = Edge::new(a_scr, b_scr, startf, sign, Framebuffer::FINE_GRID_SCALE as i64);
-        let ebc = Edge::new(b_scr, c_scr, startf, sign, Framebuffer::FINE_GRID_SCALE as i64);
-        let eca = Edge::new(c_scr, a_scr, startf, sign, Framebuffer::FINE_GRID_SCALE as i64);
+        let (start, end) = self.bounding_box([
+            Vec2::new(a.pos.x, a.pos.y),
+            Vec2::new(b.pos.x, b.pos.y),
+            Vec2::new(c.pos.x, c.pos.y),
+        ]);
+        let startf = self.to_fine(start);
+
+        let eab = Edge::new(
+            a_scr,
+            b_scr,
+            startf,
+            sign,
+            Framebuffer::FINE_GRID_SCALE as i64,
+        );
+        let ebc = Edge::new(
+            b_scr,
+            c_scr,
+            startf,
+            sign,
+            Framebuffer::FINE_GRID_SCALE as i64,
+        );
+        let eca = Edge::new(
+            c_scr,
+            a_scr,
+            startf,
+            sign,
+            Framebuffer::FINE_GRID_SCALE as i64,
+        );
 
         Some(TriangleSetup {
             a,
@@ -110,11 +128,15 @@ impl Framebuffer {
         })
     }
 
-    fn rasterize_triangle(&mut self, mut tri: TriangleSetup, frag: &impl FragmentShader) {
+    fn rasterize_triangle(&mut self, tri: TriangleSetup, frag: &impl FragmentShader) {
+        let mut base_ab = tri.eab.base;
+        let mut base_bc = tri.ebc.base;
+        let mut base_ca = tri.eca.base;
+
         for y in tri.start.y..=tri.end.y {
-            let mut e_ab = tri.eab.base - tri.eab.step.x;
-            let mut e_bc = tri.ebc.base - tri.ebc.step.x;
-            let mut e_ca = tri.eca.base - tri.eca.step.x;
+            let mut e_ab = base_ab - tri.eab.step.x;
+            let mut e_bc = base_bc - tri.ebc.step.x;
+            let mut e_ca = base_ca - tri.eca.step.x;
 
             let mut entered = false;
 
@@ -172,9 +194,9 @@ impl Framebuffer {
                 };
             }
 
-            tri.eab.base += tri.eab.step.y;
-            tri.ebc.base += tri.ebc.step.y;
-            tri.eca.base += tri.eca.step.y;
+            base_ab += tri.eab.step.y;
+            base_bc += tri.ebc.step.y;
+            base_ca += tri.eca.step.y;
         }
     }
 }

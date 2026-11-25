@@ -1,10 +1,10 @@
 mod ppm;
 use rolivec::{
-    Color, Fragment, FragmentShader, Framebuffer, Mat3, Mat4, Mesh, MeshError, Mvp, Vec3, Vec4,
+    Color, Fragment, FragmentShader, Framebuffer, Mat4, Mesh, MeshError, Mvp, Vec3, Vec4,
     VertexShader,
 };
 
-use std::f32::{self, consts::PI};
+use std::f32::{self};
 use std::io::Result;
 
 static WIDTH: usize = 1600;
@@ -18,9 +18,9 @@ fn main() -> Result<()> {
 
     let mut vert = Mvp::new(
         Mat4::identity(),
-        Mat4::translate(0.0, 0.0, -2.0),
+        Mat4::translate(0.0, 0.0, -2.5),
         Mat4::projection(
-            90_f32.to_radians(),
+            60_f32.to_radians(),
             WIDTH as f32 / HEIGHT as f32,
             0.1,
             100.0,
@@ -28,18 +28,18 @@ fn main() -> Result<()> {
     );
     let frag = Shade;
 
-    const fps: f32 = 60.0;
+    const FPS: f32 = 60.0;
     const D_RAD: f32 = f32::consts::PI / 2.0;
-    const dt: f32 = 1.0 / fps;
+    const DT: f32 = 1.0 / FPS;
     let mut deg = 0.0;
 
     while deg < 4.0 * f32::consts::PI {
         vert.set_model(Mat4::rot_y(deg) * Mat4::rot_z(deg));
         fb.clear_all(Color::BLACK);
         fb.render_mesh(&mesh, &vert, &frag);
-        deg += dt * D_RAD;
+        deg += DT * D_RAD;
 
-        write(&fb);
+        write(&fb)?;
     }
 
     Ok(())

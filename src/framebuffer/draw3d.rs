@@ -1,5 +1,7 @@
 use crate::clip::{ClipVertex, clip_triangle};
-use crate::{FragmentShader, Framebuffer, Mesh, Vec3, Vec4, VertexShader};
+use crate::{
+    Color, FragmentShader, Framebuffer, Mesh, RenderingMode, Vec2, Vec3, Vec4, VertexShader,
+};
 
 impl Framebuffer {
     fn draw_clip_triangle(&mut self, clip: [Vec4; 3], frag: &impl FragmentShader) {
@@ -10,7 +12,22 @@ impl Framebuffer {
             return;
         }
 
-        for i in 1..n.saturating_sub(1) {
+        if self.mode == RenderingMode::Wireframe {
+            let vs = vs.map(|v| v.pos.project());
+
+            for i in 0..n {
+                self.line(
+                    Vec2::new(vs[i].x, vs[i].y),
+                    Vec2::new(vs[(i + 1) % n].x, vs[(i + 1) % n].y),
+                    Color::WHITE,
+                    255,
+                );
+            }
+
+            return;
+        }
+
+        for i in 1..n - 1 {
             self.triangle([vs[0], vs[i], vs[i + 1]], frag);
         }
     }

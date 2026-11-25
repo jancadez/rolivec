@@ -15,6 +15,12 @@ pub enum BackfaceCulling {
     CcwCulling,
 }
 
+#[derive(Eq, PartialEq, Debug, Copy, Clone)]
+pub enum RenderingMode {
+    Normal,
+    Wireframe,
+}
+
 #[derive(Debug)]
 pub struct Framebuffer {
     width: usize,
@@ -24,6 +30,7 @@ pub struct Framebuffer {
     pixels: Box<[Color]>,
     z_buffer: Box<[f32]>,
     culling: BackfaceCulling,
+    mode: RenderingMode
 }
 
 impl Framebuffer {
@@ -63,15 +70,16 @@ impl Framebuffer {
             pixels: vec![Color::rgb(0, 0, 0); pixels].into_boxed_slice(),
             z_buffer: vec![f32::MAX; pixels].into_boxed_slice(),
             culling: BackfaceCulling::CwCulling,
+            mode: RenderingMode::Normal,
         }
-    }
-
-    pub fn get_culling(&self) -> BackfaceCulling {
-        self.culling
     }
 
     pub fn set_culling(&mut self, culling: BackfaceCulling) {
         self.culling = culling;
+    }
+
+    pub fn set_mode(&mut self, mode: RenderingMode) {
+        self.mode = mode;
     }
 
     pub(crate) fn map_idx(&self, p: IVec2) -> Option<usize> {
@@ -111,12 +119,15 @@ impl Framebuffer {
     pub(crate) fn bounding_box(&self, vs: [Vec2; 3]) -> (IVec2, IVec2) {
         let scr_vs = vs.map(|v| self.screen(Vec2::new(v.x, v.y)));
 
+        let scr_min = IVec2::new(0, 0);
+        let scr_max = IVec2::new(self.width as i32 - 1, self.height as i32 - 1);
+
         let (min, max) = scr_vs.into_iter().fold(
             (IVec2::splat(i32::MAX), IVec2::splat(i32::MIN)),
             |acc, v| (acc.0.min(v), acc.1.max(v)),
         );
 
-        (min, max)
+        (min.max(scr_min), max.min(scr_max))
     }
 
     pub(crate) fn pixel_mut(&mut self, p: IVec2) -> Option<&mut Color> {

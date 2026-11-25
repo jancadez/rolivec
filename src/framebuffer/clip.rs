@@ -90,7 +90,7 @@ fn clip_plane(input: &[ClipVertex], plane: usize, out: &mut [ClipVertex; 9]) -> 
         let next = input[(i + 1) % input.len()];
         let dn = plane_dist(next.pos, plane);
 
-        if dc > 0.0 {
+        if dc >= 0.0 {
             out[n] = curr;
             n += 1;
         }

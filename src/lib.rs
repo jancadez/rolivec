@@ -2,7 +2,7 @@ mod color;
 pub use color::Color;
 
 mod framebuffer;
-pub use framebuffer::{BackfaceCulling, Framebuffer};
+pub use framebuffer::{BackfaceCulling, Framebuffer, RenderingMode};
 
 use framebuffer::{clip, shade};
 pub use shade::{Fragment, FragmentShader, Mvp, VertexShader};

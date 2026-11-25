@@ -2,34 +2,32 @@ use crate::{Color, Framebuffer, IVec2, Vec2};
 
 impl Framebuffer {
     pub fn line(&mut self, a: Vec2, b: Vec2, color: Color, alpha: u8) {
-        let a_scr = self.screen(a);
-        let b_scr = self.screen(b);
-        let dx = (b_scr.x - a_scr.x) as f32;
-        let dy = (b_scr.y - a_scr.y) as f32;
+        let a = self.screen(a);
+        let b = self.screen(b);
 
-        let step_x: f32;
-        let step_y: f32;
+        let dx = (b.x - a.x) as f32;
+        let dy = (b.y - a.y) as f32;
 
-        if dx.abs() > dy.abs() {
-            step_x = 1_f32;
-            step_y = dy / dx;
-        } else {
-            step_x = dx / dy;
-            step_y = 1_f32;
+        let steps = dx.abs().max(dy.abs()) as usize;
+
+        if steps == 0 {
+            self.draw_pixel(a, color, alpha);
+            return;
         }
 
-        let mut x = a_scr.x as f32;
-        let mut y = a_scr.y as f32;
+        let step_x = dx / steps as f32;
+        let step_y = dy / steps as f32;
 
-        for _ in 0..dx.abs().max(dy.abs()) as usize {
+        let mut x = a.x as f32;
+        let mut y = a.y as f32;
+
+        for _ in 0..=steps {
             let p = IVec2::new(x.round() as i32, y.round() as i32);
             self.draw_pixel(p, color, alpha);
 
             x += step_x;
             y += step_y;
         }
-
-        self.draw_pixel(a_scr, color, alpha);
     }
 
     pub fn rectangle(&mut self, a: Vec2, b: Vec2, color: Color, alpha: u8) {

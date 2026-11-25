@@ -77,10 +77,10 @@ impl Color {
     pub const FOREST: Color = Color::rgb(45, 120, 75);
     pub const SEAFOAM: Color = Color::rgb(85, 165, 145);
 
-    pub const BLACK: Color = Color::rgb(18, 20, 24);
-    pub const DARK_GRAY: Color = Color::rgb(45, 48, 55);
+    pub const BLACK: Color = Color::rgb(0, 0, 0);
+    pub const DARK_GRAY: Color = Color::rgb(18, 20, 24);
     pub const GRAY: Color = Color::rgb(100, 105, 115);
     pub const LIGHT_GRAY: Color = Color::rgb(170, 175, 185);
-    pub const WHITE: Color = Color::rgb(238, 240, 242);
-    pub const OFF_WHITE: Color = Color::rgb(220, 218, 205);
+    pub const WHITE: Color = Color::rgb(255, 255, 255);
+    pub const OFF_WHITE: Color = Color::rgb(238, 240, 242);
 }
