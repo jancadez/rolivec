@@ -11,7 +11,7 @@ impl Framebuffer {
         }
 
         for i in 1..n.saturating_sub(1) {
-            self.rasterize_triangle([vs[0], vs[i], vs[i + 1]], frag);
+            self.triangle([vs[0], vs[i], vs[i + 1]], frag);
         }
     }
 
@@ -32,7 +32,7 @@ impl Framebuffer {
         }
     }
 
-    pub fn triangle(
+    pub fn draw_triangle(
         &mut self,
         vertices: [Vec3; 3],
         vert: &impl VertexShader,

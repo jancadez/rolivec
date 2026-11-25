@@ -3,80 +3,125 @@ use crate::{
     BackfaceCulling, Fragment, FragmentShader, Framebuffer, I64Mat2, I64Vec2, IVec2, Vec2, Vec3,
 };
 
+struct Edge {
+    base: i64,
+    step: I64Vec2,
+}
+
+impl Edge {
+    #[inline]
+    fn new(p: I64Vec2, q: I64Vec2, start: I64Vec2, sign: i64, scale: i64) -> Edge {
+        Edge {
+            base: I64Mat2::new(q - p, start - p).determinant() * sign,
+            step: I64Vec2::new(p.y - q.y, q.x - p.x) * scale * sign,
+        }
+    }
+}
+
+struct TriangleVertex {
+    pos: Vec3,
+    bary: Vec3,
+    w_inv: f32,
+}
+
+impl TriangleVertex {
+    #[inline]
+    fn new(v: ClipVertex) -> TriangleVertex {
+        TriangleVertex {
+            pos: v.pos.project(),
+            bary: v.bary,
+            w_inv: 1.0 / v.pos.w as f32,
+        }
+    }
+}
+
+struct TriangleSetup {
+    a: TriangleVertex,
+    b: TriangleVertex,
+    c: TriangleVertex,
+    eab: Edge,
+    ebc: Edge,
+    eca: Edge,
+    inv_det: f32,
+    start: IVec2,
+    end: IVec2,
+}
+
 impl Framebuffer {
-    pub(crate) fn rasterize_triangle(&mut self, vs: [ClipVertex; 3], frag: &impl FragmentShader) {
-        let a = vs[0].pos.project();
-        let b = vs[1].pos.project();
-        let c = vs[2].pos.project();
+    pub(crate) fn triangle(&mut self, vs: [ClipVertex; 3], frag: &impl FragmentShader) {
+        let Some(setup) = self.setup_triangle(vs) else {
+            return;
+        };
 
-        let aw = vs[0].pos.w;
-        let bw = vs[1].pos.w;
-        let cw = vs[2].pos.w;
+        self.rasterize_triangle(setup, frag);
+    }
 
-        let aw_inv = 1.0 / aw;
-        let bw_inv = 1.0 / bw;
-        let cw_inv = 1.0 / cw;
+    fn setup_triangle(&mut self, vs: [ClipVertex; 3]) -> Option<TriangleSetup> {
+        let a = TriangleVertex::new(vs[0]);
+        let b = TriangleVertex::new(vs[1]);
+        let c = TriangleVertex::new(vs[2]);
 
-        let a_scr = self.screen(Vec2::new(a.x, a.y));
-        let b_scr = self.screen(Vec2::new(b.x, b.y));
-        let c_scr = self.screen(Vec2::new(c.x, c.y));
+        let a_scr = self.screen_fine(Vec2::new(a.pos.x, a.pos.y));
+        let b_scr = self.screen_fine(Vec2::new(b.pos.x, b.pos.y));
+        let c_scr = self.screen_fine(Vec2::new(c.pos.x, c.pos.y));
 
-        let a_scrf = self.screen_fine(Vec2::new(a.x, a.y));
-        let b_scrf = self.screen_fine(Vec2::new(b.x, b.y));
-        let c_scrf = self.screen_fine(Vec2::new(c.x, c.y));
+        let (start, end) = self.bounding_box([
+            Vec2::new(a.pos.x, a.pos.y),
+            Vec2::new(b.pos.x, b.pos.y),
+            Vec2::new(c.pos.x, c.pos.y),
+        ]);
+        let startf = self.to_fine(start);
 
-        let (start, end) = self.bounding_box(a_scr, b_scr, c_scr);
+        let det = I64Mat2::new(b_scr - a_scr, c_scr - a_scr).determinant();
+        let sign;
 
-        let triangle_det = I64Mat2::new(b_scrf - a_scrf, c_scrf - a_scrf).determinant();
-        let det_sign;
-
-        match triangle_det.signum() {
+        match det.signum() {
             -1 => {
                 if self.culling == BackfaceCulling::CcwCulling {
-                    return;
+                    return None;
                 }
 
-                det_sign = -1;
+                sign = -1;
             }
             1 => {
                 if self.culling == BackfaceCulling::CwCulling {
-                    return;
+                    return None;
                 }
 
-                det_sign = 1;
+                sign = 1;
             }
-            _ => return,
+            _ => return None,
         }
 
-        let inv_det = 1.0 / (triangle_det * det_sign) as f32;
+        let eab = Edge::new(a_scr, b_scr, startf, sign, Framebuffer::FINE_GRID_SCALE as i64);
+        let ebc = Edge::new(b_scr, c_scr, startf, sign, Framebuffer::FINE_GRID_SCALE as i64);
+        let eca = Edge::new(c_scr, a_scr, startf, sign, Framebuffer::FINE_GRID_SCALE as i64);
 
-        let startf = self.to_fine(start);
+        Some(TriangleSetup {
+            a,
+            b,
+            c,
+            eab,
+            ebc,
+            eca,
+            inv_det: 1.0 / (det * sign) as f32,
+            start,
+            end,
+        })
+    }
 
-        let mut base_e_ab = I64Mat2::new(b_scrf - a_scrf, startf - a_scrf).determinant() * det_sign;
-        let mut base_e_bc = I64Mat2::new(c_scrf - b_scrf, startf - b_scrf).determinant() * det_sign;
-        let mut base_e_ca = I64Mat2::new(a_scrf - c_scrf, startf - c_scrf).determinant() * det_sign;
-
-        let ab_step = I64Vec2::new(a_scrf.y - b_scrf.y, b_scrf.x - a_scrf.x)
-            * Framebuffer::FINE_GRID_SCALE as i64
-            * det_sign;
-        let bc_step = I64Vec2::new(b_scrf.y - c_scrf.y, c_scrf.x - b_scrf.x)
-            * Framebuffer::FINE_GRID_SCALE as i64
-            * det_sign;
-        let ca_step = I64Vec2::new(c_scrf.y - a_scrf.y, a_scrf.x - c_scrf.x)
-            * Framebuffer::FINE_GRID_SCALE as i64
-            * det_sign;
-
-        for y in start.y..=end.y {
-            let mut e_ab = base_e_ab - ab_step.x;
-            let mut e_bc = base_e_bc - bc_step.x;
-            let mut e_ca = base_e_ca - ca_step.x;
+    fn rasterize_triangle(&mut self, mut tri: TriangleSetup, frag: &impl FragmentShader) {
+        for y in tri.start.y..=tri.end.y {
+            let mut e_ab = tri.eab.base - tri.eab.step.x;
+            let mut e_bc = tri.ebc.base - tri.ebc.step.x;
+            let mut e_ca = tri.eca.base - tri.eca.step.x;
 
             let mut entered = false;
 
-            for x in start.x..=end.x {
-                e_ab += ab_step.x;
-                e_bc += bc_step.x;
-                e_ca += ca_step.x;
+            for x in tri.start.x..=tri.end.x {
+                e_ab += tri.eab.step.x;
+                e_bc += tri.ebc.step.x;
+                e_ca += tri.eca.step.x;
 
                 if e_ab < 0 || e_bc < 0 || e_ca < 0 {
                     if entered {
@@ -84,16 +129,18 @@ impl Framebuffer {
                     } else {
                         continue;
                     }
+                } else {
+                    entered = true;
                 }
 
-                let wa_scr = e_bc as f32 * inv_det;
-                let wb_scr = e_ca as f32 * inv_det;
-                let wc_scr = e_ab as f32 * inv_det;
+                let wa_scr = e_bc as f32 * tri.inv_det;
+                let wb_scr = e_ca as f32 * tri.inv_det;
+                let wc_scr = e_ab as f32 * tri.inv_det;
 
                 let p = IVec2::new(x, y);
                 let Some(idx) = self.map_idx(p) else { return };
 
-                let z = a.z * wa_scr + b.z * wb_scr + c.z * wc_scr;
+                let z = tri.a.pos.z * wa_scr + tri.b.pos.z * wb_scr + tri.c.pos.z * wc_scr;
 
                 if z > self.z_buffer[idx] {
                     continue;
@@ -101,9 +148,9 @@ impl Framebuffer {
 
                 let p_ndc = self.screen_to_ndc(p);
 
-                let wa = wa_scr * aw_inv;
-                let wb = wb_scr * bw_inv;
-                let wc = wc_scr * cw_inv;
+                let wa = wa_scr * tri.a.w_inv;
+                let wb = wb_scr * tri.b.w_inv;
+                let wc = wc_scr * tri.c.w_inv;
 
                 let w_sum = wa + wb + wc;
                 let w_sum_inv = 1.0 / w_sum;
@@ -112,7 +159,7 @@ impl Framebuffer {
                 let lb = wb * w_sum_inv;
                 let lc = wc * w_sum_inv;
 
-                let bary = vs[0].bary * la + vs[1].bary * lb + vs[2].bary * lc;
+                let bary = tri.a.bary * la + tri.b.bary * lb + tri.c.bary * lc;
 
                 let fragment = Fragment {
                     pos: Vec3::new(p_ndc.x, p_ndc.y, z),
@@ -123,13 +170,11 @@ impl Framebuffer {
                     self.z_buffer[idx] = z;
                     self.pixels[idx] = color;
                 };
-
-                entered = true;
             }
 
-            base_e_ab += ab_step.y;
-            base_e_bc += bc_step.y;
-            base_e_ca += ca_step.y;
+            tri.eab.base += tri.eab.step.y;
+            tri.ebc.base += tri.ebc.step.y;
+            tri.eca.base += tri.eca.step.y;
         }
     }
 }

@@ -108,16 +108,15 @@ impl Framebuffer {
         Vec2::new(x, y)
     }
 
-    pub(crate) fn bounding_box(&self, a: IVec2, b: IVec2, c: IVec2) -> (IVec2, IVec2) {
-        let max_w = self.width as i32 - 1;
-        let max_h = self.height as i32 - 1;
+    pub(crate) fn bounding_box(&self, vs: [Vec2; 3]) -> (IVec2, IVec2) {
+        let scr_vs = vs.map(|v| self.screen(Vec2::new(v.x, v.y)));
 
-        let min_x = a.x.min(b.x.min(c.x)).clamp(0, max_w);
-        let min_y = a.y.min(b.y.min(c.y)).clamp(0, max_h);
-        let max_x = a.x.max(b.x.max(c.x)).clamp(0, max_w);
-        let max_y = a.y.max(b.y.max(c.y)).clamp(0, max_h);
+        let (min, max) = scr_vs.into_iter().fold(
+            (IVec2::splat(i32::MAX), IVec2::splat(i32::MIN)),
+            |acc, v| (acc.0.min(v), acc.1.max(v)),
+        );
 
-        (IVec2::new(min_x, min_y), IVec2::new(max_x, max_y))
+        (min, max)
     }
 
     pub(crate) fn pixel_mut(&mut self, p: IVec2) -> Option<&mut Color> {

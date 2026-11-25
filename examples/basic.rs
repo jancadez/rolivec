@@ -55,7 +55,7 @@ fn main() -> Result<()> {
     let vert = Transform;
     let frag = Shade;
 
-    fb.triangle(
+    fb.draw_triangle(
         [
             Vec3::new(-1.0, -1.0, 1.0),
             Vec3::new(1.0, -1.0, 1.0),

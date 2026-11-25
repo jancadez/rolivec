@@ -34,7 +34,7 @@ fn main() {
         Mat4::identity(),
         Mat4::translate(0.0, 0.0, -4.0),
         Mat4::projection(
-            90_f32.to_radians(),
+            60_f32.to_radians(),
             WIDTH as f32 / HEIGHT as f32,
             0.1,
             100.0,

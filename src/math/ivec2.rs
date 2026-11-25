@@ -11,6 +11,18 @@ impl IVec2 {
     pub fn new(x: i32, y: i32) -> IVec2 {
         IVec2 { x, y }
     }
+
+    pub fn splat(n: i32) -> IVec2 {
+        IVec2::new(n, n)
+    }
+
+    pub fn min(self, rhs: IVec2) -> IVec2 {
+        IVec2::new(self.x.min(rhs.x), self.y.min(rhs.y))
+    }
+
+    pub fn max(self, rhs: IVec2) -> IVec2 {
+        IVec2::new(self.x.max(rhs.x), self.y.max(rhs.y))
+    }
 }
 
 impl Add for IVec2 {
