@@ -1,7 +1,7 @@
 use crate::Vec2;
 use std::ops::Mul;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 #[repr(C)]
 pub struct Mat2 {
     pub x: Vec2,

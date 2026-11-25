@@ -18,13 +18,13 @@ fn main() -> Result<()> {
 
     let mut vert = Mvp::new(
         Mat4::identity(),
-        Mat4::translate(0.0, 0.0, -4.0),
-        Mat4::projection(PI / 2.0, WIDTH as f32 / HEIGHT as f32, 0.1, 100.0),
+        Mat4::translate(0.0, 0.0, -2.0),
+        Mat4::projection(90_f32.to_radians(), WIDTH as f32 / HEIGHT as f32, 0.1, 100.0),
     );
     let frag = Shade;
 
     const fps: f32 = 60.0;
-    const d_rad: f32 = f32::consts::PI / 2.0;
+    const D_RAD: f32 = f32::consts::PI / 2.0;
     const dt: f32 = 1.0 / fps;
     let mut deg = 0.0;
 
@@ -32,7 +32,7 @@ fn main() -> Result<()> {
         vert.set_model(Mat4::rot_y(deg) * Mat4::rot_z(deg));
         fb.clear_all(Color::BLACK);
         fb.render_mesh(&mesh, &vert, &frag);
-        deg += dt * d_rad;
+        deg += dt * D_RAD;
 
         write(&fb);
     }

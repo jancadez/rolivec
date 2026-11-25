@@ -1,7 +1,7 @@
 use crate::Vec3;
 use std::ops::Mul;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 #[repr(C)]
 pub struct Mat3 {
     pub x: Vec3,

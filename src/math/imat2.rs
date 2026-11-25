@@ -1,7 +1,7 @@
 use crate::IVec2;
 use std::ops::Mul;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 #[repr(C)]
 pub struct IMat2 {
     pub x: IVec2,
@@ -21,10 +21,7 @@ impl IMat2 {
 impl Mul for IMat2 {
     type Output = IMat2;
     fn mul(self, rhs: IMat2) -> IMat2 {
-        IMat2::new(
-            self * rhs.x,
-            self * rhs.y,
-        )
+        IMat2::new(self * rhs.x, self * rhs.y)
     }
 }
 

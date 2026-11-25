@@ -1,8 +1,9 @@
+pub mod clip;
 pub mod draw2d;
+pub mod export;
 pub mod pixel;
 pub mod rasterize;
 pub mod shade;
-pub mod export;
 
 use crate::{Color, I64Vec2, IVec2, Vec2};
 
@@ -85,9 +86,11 @@ impl Framebuffer {
     }
 
     pub(crate) fn screen_fine(&self, p: Vec2) -> I64Vec2 {
-        let x = ((p.x + 1.0) * 0.5 * ((self.width - 1) * Framebuffer::FINE_GRID_SCALE) as f32).round() as i64;
-        let y =
-            ((1.0 - (p.y + 1.0) * 0.5) * ((self.height - 1) * Framebuffer::FINE_GRID_SCALE) as f32).round() as i64;
+        let x = ((p.x + 1.0) * 0.5 * ((self.width - 1) * Framebuffer::FINE_GRID_SCALE) as f32)
+            .round() as i64;
+        let y = ((1.0 - (p.y + 1.0) * 0.5)
+            * ((self.height - 1) * Framebuffer::FINE_GRID_SCALE) as f32)
+            .round() as i64;
         I64Vec2::new(x, y)
     }
 

@@ -1,7 +1,7 @@
 use crate::I64Vec2;
 use std::ops::Mul;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 #[repr(C)]
 pub struct I64Mat2 {
     pub x: I64Vec2,
@@ -21,10 +21,7 @@ impl I64Mat2 {
 impl Mul for I64Mat2 {
     type Output = I64Mat2;
     fn mul(self, rhs: I64Mat2) -> I64Mat2 {
-        I64Mat2::new(
-            self * rhs.x,
-            self * rhs.y,
-        )
+        I64Mat2::new(self * rhs.x, self * rhs.y)
     }
 }
 

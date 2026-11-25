@@ -1,4 +1,4 @@
-use rolivec::{BackfaceCulling, Color, Fragment, FragmentShader, Framebuffer, Mat4, Mesh, MeshError, Mvp, Vec3};
+use rolivec::{Color, Fragment, FragmentShader, Framebuffer, Mat4, Mesh, MeshError, Mvp, Vec3};
 
 use sdl3::event::Event;
 use sdl3::keyboard::Keycode;
@@ -21,14 +21,13 @@ fn main() {
     let mut canvas = window.into_canvas();
     let mut event_pump = sdl_context.event_pump().unwrap();
     let mut i = 0;
-
+    
     let texture_creator = canvas.texture_creator();
     let mut texture = texture_creator
         .create_texture_streaming(PixelFormat::RGB24, WIDTH as u32, HEIGHT as u32)
         .unwrap();
 
     let mut fb = Framebuffer::new(WIDTH, HEIGHT);
-    fb.set_culling(BackfaceCulling::NoCulling);
     let mesh = cube().unwrap();
 
     let mut vert = Mvp::new(
@@ -46,8 +45,6 @@ fn main() {
     const D_RAD: f32 = std::f32::consts::PI / 2.0;
     let mut dt = 0.0;
     let mut deg = 0.0;
-
-    let mut buffer = vec![0_u32; WIDTH * HEIGHT];
 
     let mut last_time = Instant::now();
     let mut frame_count: usize = 0;
@@ -110,7 +107,7 @@ fn cube() -> std::result::Result<Mesh, MeshError> {
             Vec3::new(1.0, -1.0, -1.0),
         ],
         vec![
-            // [0, 2, 1],
+            [0, 2, 1],
             [1, 2, 3],
             [5, 6, 4],
             [7, 6, 5],
