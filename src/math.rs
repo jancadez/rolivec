@@ -1,3 +1,6 @@
+pub mod camera;
+pub mod mvp;
+
 mod mat4;
 pub use mat4::Mat4;
 
@@ -14,6 +17,12 @@ impl Vec3 {
             self.z * rhs.x - self.x * rhs.z,
             self.x * rhs.y - self.y * rhs.x,
         )
+    }
+    pub fn length(self) -> f32 {
+        f32::sqrt(self.x.powi(2) + self.y.powi(2) + self.z.powi(2))
+    }
+    pub fn normalize(self) -> Self {
+        self / self.length()
     }
 }
 impl Vec4 {

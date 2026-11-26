@@ -1,6 +1,8 @@
-use rolivec::{Color, Fragment, FragmentShader, Framebuffer, Mat4, Mesh, MeshError, Mvp, Vec3};
+use rolivec::{
+    Camera, Color, Fragment, FragmentShader, Framebuffer, Mat4, Mesh, MeshError, Mvp, Vec3,
+};
 
-use sdl3::event::Event;
+use sdl3::{event::Event, keyboard::Scancode};
 use sdl3::keyboard::Keycode;
 use sdl3::pixels::PixelFormat;
 use std::time::{Duration, Instant};
@@ -18,6 +20,8 @@ fn main() {
         .build()
         .unwrap();
 
+    sdl_context.mouse().set_relative_mouse_mode(&window, true);
+
     let mut canvas = window.into_canvas();
     let mut event_pump = sdl_context.event_pump().unwrap();
     let mut i = 0;
@@ -30,15 +34,20 @@ fn main() {
     let mut fb = Framebuffer::new(WIDTH, HEIGHT);
     let mesh = cube().unwrap();
 
+    let mut camera = Camera::new(
+        Vec3::new(0.0, 0.0, 4.0),
+        0.0,
+        0.0,
+        60_f32.to_radians(),
+        WIDTH,
+        HEIGHT,
+        0.1,
+        100.0,
+    );
+
     let mut vert = Mvp::new(
         Mat4::identity(),
-        Mat4::translate(0.0, 0.0, -4.0),
-        Mat4::projection(
-            60_f32.to_radians(),
-            WIDTH as f32 / HEIGHT as f32,
-            0.1,
-            100.0,
-        ),
+        camera.view_proj(),
     );
     let frag = Shade;
 
@@ -48,6 +57,8 @@ fn main() {
 
     let mut last_time = Instant::now();
     let mut frame_count: usize = 0;
+
+    const SENS: f32 = 0.0015;
 
     'running: loop {
         let start = Instant::now();
@@ -60,12 +71,27 @@ fn main() {
                     keycode: Some(Keycode::Escape | Keycode::Q),
                     ..
                 } => break 'running,
+                Event::MouseMotion { xrel, yrel, .. } => {
+                    camera.yaw   += xrel * SENS;
+                    camera.pitch  = (camera.pitch + yrel * SENS).clamp(-90_f32.to_radians(), 90_f32.to_radians());
+                }
                 _ => {}
             }
         }
 
+        let keys = event_pump.keyboard_state();
+        let mov_speed = 5.0 * dt;
+
+        if keys.is_scancode_pressed(Scancode::W) {camera.move_forward(mov_speed);}
+        if keys.is_scancode_pressed(Scancode::S) {camera.move_forward(-mov_speed);}
+        if keys.is_scancode_pressed(Scancode::D) {camera.move_right(mov_speed);}
+        if keys.is_scancode_pressed(Scancode::A) {camera.move_right(-mov_speed);}
+        if keys.is_scancode_pressed(Scancode::Space) {camera.move_up(mov_speed);}
+        if keys.is_scancode_pressed(Scancode::LShift) {camera.move_up(-mov_speed);}
+
         deg += dt * D_RAD;
 
+        vert.set_view_proj(camera.view_proj());
         vert.set_model(Mat4::rot_y(deg) * Mat4::rot_z(deg));
         fb.clear_all(Color::BLACK);
         fb.render_mesh(&mesh, &vert, &frag);
