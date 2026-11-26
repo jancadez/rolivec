@@ -98,21 +98,21 @@ impl Framebuffer {
             b_scr,
             startf,
             sign,
-            Framebuffer::FINE_GRID_SCALE as i64,
+            Framebuffer::FINE_GRID_SCALE,
         );
         let ebc = Edge::new(
             b_scr,
             c_scr,
             startf,
             sign,
-            Framebuffer::FINE_GRID_SCALE as i64,
+            Framebuffer::FINE_GRID_SCALE,
         );
         let eca = Edge::new(
             c_scr,
             a_scr,
             startf,
             sign,
-            Framebuffer::FINE_GRID_SCALE as i64,
+            Framebuffer::FINE_GRID_SCALE,
         );
 
         Some(TriangleSetup {

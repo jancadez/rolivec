@@ -1,10 +1,10 @@
 use rolivec::{
-    Camera, Color, Fragment, FragmentShader, Framebuffer, Mat4, Mesh, MeshError, Mvp, Vec3,
+    Camera, Color, Fragment, FragmentShader, Framebuffer, Mat4, Mesh, Mvp, RenderingMode, Vec3,
 };
 
-use sdl3::{event::Event, keyboard::Scancode};
 use sdl3::keyboard::Keycode;
 use sdl3::pixels::PixelFormat;
+use sdl3::{event::Event, keyboard::Scancode};
 use std::time::{Duration, Instant};
 
 const WIDTH: usize = 1600;
@@ -20,19 +20,17 @@ fn main() {
         .build()
         .unwrap();
 
-    sdl_context.mouse().set_relative_mouse_mode(&window, true);
-
     let mut canvas = window.into_canvas();
     let mut event_pump = sdl_context.event_pump().unwrap();
     let mut i = 0;
 
     let texture_creator = canvas.texture_creator();
     let mut texture = texture_creator
-        .create_texture_streaming(PixelFormat::RGB24, WIDTH as u32, HEIGHT as u32)
+        .create_texture_streaming(PixelFormat::RGBX32, WIDTH as u32, HEIGHT as u32)
         .unwrap();
 
     let mut fb = Framebuffer::new(WIDTH, HEIGHT);
-    let mesh = cube().unwrap();
+    let cube = cube();
 
     let mut camera = Camera::new(
         Vec3::new(0.0, 0.0, 4.0),
@@ -45,10 +43,7 @@ fn main() {
         100.0,
     );
 
-    let mut vert = Mvp::new(
-        Mat4::identity(),
-        camera.view_proj(),
-    );
+    let mut vert = Mvp::new(Mat4::identity(), camera.view_proj());
     let frag = Shade;
 
     const D_RAD: f32 = std::f32::consts::PI / 2.0;
@@ -68,12 +63,32 @@ fn main() {
             match event {
                 Event::Quit { .. }
                 | Event::KeyDown {
-                    keycode: Some(Keycode::Escape | Keycode::Q),
+                    keycode: Some(Keycode::Q),
                     ..
                 } => break 'running,
-                Event::MouseMotion { xrel, yrel, .. } => {
-                    camera.yaw   += xrel * SENS;
-                    camera.pitch  = (camera.pitch + yrel * SENS).clamp(-90_f32.to_radians(), 90_f32.to_radians());
+                Event::KeyDown {
+                    keycode: Some(Keycode::Escape),
+                    ..
+                } => sdl_context
+                    .mouse()
+                    .set_relative_mouse_mode(canvas.window(), false),
+                Event::KeyDown {
+                    keycode: Some(Keycode::M),
+                    ..
+                } => fb.set_mode(if fb.mode() == RenderingMode::Normal {
+                    RenderingMode::Wireframe
+                } else {
+                    RenderingMode::Normal
+                }),
+                Event::MouseButtonDown { .. } => sdl_context
+                    .mouse()
+                    .set_relative_mouse_mode(canvas.window(), true),
+                Event::MouseMotion { xrel, yrel, .. }
+                    if sdl_context.mouse().relative_mouse_mode(canvas.window()) =>
+                {
+                    camera.yaw += xrel * SENS;
+                    camera.pitch = (camera.pitch + yrel * SENS)
+                        .clamp(-88_f32.to_radians(), 88_f32.to_radians());
                 }
                 _ => {}
             }
@@ -82,23 +97,35 @@ fn main() {
         let keys = event_pump.keyboard_state();
         let mov_speed = 5.0 * dt;
 
-        if keys.is_scancode_pressed(Scancode::W) {camera.move_forward(mov_speed);}
-        if keys.is_scancode_pressed(Scancode::S) {camera.move_forward(-mov_speed);}
-        if keys.is_scancode_pressed(Scancode::D) {camera.move_right(mov_speed);}
-        if keys.is_scancode_pressed(Scancode::A) {camera.move_right(-mov_speed);}
-        if keys.is_scancode_pressed(Scancode::Space) {camera.move_up(mov_speed);}
-        if keys.is_scancode_pressed(Scancode::LShift) {camera.move_up(-mov_speed);}
+        if keys.is_scancode_pressed(Scancode::W) {
+            camera.move_forward(mov_speed);
+        }
+        if keys.is_scancode_pressed(Scancode::S) {
+            camera.move_forward(-mov_speed);
+        }
+        if keys.is_scancode_pressed(Scancode::D) {
+            camera.move_right(mov_speed);
+        }
+        if keys.is_scancode_pressed(Scancode::A) {
+            camera.move_right(-mov_speed);
+        }
+        if keys.is_scancode_pressed(Scancode::Space) {
+            camera.move_up(mov_speed);
+        }
+        if keys.is_scancode_pressed(Scancode::LShift) {
+            camera.move_up(-mov_speed);
+        }
 
         deg += dt * D_RAD;
 
         vert.set_view_proj(camera.view_proj());
-        vert.set_model(Mat4::rot_y(deg) * Mat4::rot_z(deg));
         fb.clear_all(Color::BLACK);
-        fb.render_mesh(&mesh, &vert, &frag);
+        vert.set_model(Mat4::rot_y(deg) * Mat4::rot_z(deg));
+        fb.render_mesh(&cube, &vert, &frag);
 
         texture
             .with_lock(None, |buf: &mut [u8], pitch: usize| {
-                fb.rgb24_into(buf, Some(pitch));
+                fb.rgbx32_into(buf, Some(pitch));
             })
             .unwrap();
 
@@ -120,7 +147,7 @@ fn main() {
     }
 }
 
-fn cube() -> std::result::Result<Mesh, MeshError> {
+fn cube() -> Mesh {
     Mesh::new(
         vec![
             Vec3::new(-1.0, 1.0, 1.0),
@@ -147,6 +174,7 @@ fn cube() -> std::result::Result<Mesh, MeshError> {
             [0, 4, 2],
         ],
     )
+    .unwrap()
 }
 
 struct Shade;

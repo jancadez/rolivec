@@ -34,7 +34,12 @@ pub struct Framebuffer {
 }
 
 impl Framebuffer {
-    pub const FINE_GRID_SCALE: usize = 16;
+    pub const FINE_GRID_SHIFT: u32 = 4;
+    pub const FINE_GRID_SCALE: i64 = 1 << Framebuffer::FINE_GRID_SHIFT;
+
+    pub const TILE_SHIFT: u32 = 5;
+    pub const TILE_SIZE: usize = 1 << Framebuffer::TILE_SHIFT;
+    pub const TILE_MASK: usize = Framebuffer::TILE_SIZE - 1;
 
     pub fn width(&self) -> usize {
         self.width
@@ -78,6 +83,10 @@ impl Framebuffer {
         self.culling = culling;
     }
 
+    pub fn mode(&self) -> RenderingMode {
+        self.mode
+    }
+
     pub fn set_mode(&mut self, mode: RenderingMode) {
         self.mode = mode;
     }
@@ -95,18 +104,18 @@ impl Framebuffer {
     }
 
     pub(crate) fn screen_fine(&self, p: Vec2) -> I64Vec2 {
-        let x = ((p.x + 1.0) * 0.5 * ((self.width - 1) * Framebuffer::FINE_GRID_SCALE) as f32)
+        let x = ((p.x + 1.0) * 0.5 * ((self.width - 1) * Framebuffer::FINE_GRID_SCALE as usize) as f32)
             .round() as i64;
         let y = ((1.0 - (p.y + 1.0) * 0.5)
-            * ((self.height - 1) * Framebuffer::FINE_GRID_SCALE) as f32)
+            * ((self.height - 1) * Framebuffer::FINE_GRID_SCALE as usize) as f32)
             .round() as i64;
         I64Vec2::new(x, y)
     }
 
     pub(crate) fn to_fine(&self, p: IVec2) -> I64Vec2 {
         I64Vec2::new(
-            p.x as i64 * Framebuffer::FINE_GRID_SCALE as i64,
-            p.y as i64 * Framebuffer::FINE_GRID_SCALE as i64,
+            p.x as i64 * Framebuffer::FINE_GRID_SCALE,
+            p.y as i64 * Framebuffer::FINE_GRID_SCALE,
         )
     }
 

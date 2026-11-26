@@ -1,34 +1,36 @@
 use crate::{Color, Framebuffer};
 
 impl Framebuffer {
-    pub fn rgb24_into(&self, buf: &mut [u8], pitch: Option<usize>) {
+    pub fn rgbx32_into(&self, buf: &mut [u8], pitch: Option<usize>) {
         let row_sz = self.width * size_of::<Color>();
 
         match pitch {
             None | Some(0) => {
                 let src_bytes = unsafe {
-                    std::slice::from_raw_parts(self.pixels.as_ptr() as *const u8, row_sz * self.height)
+                    std::slice::from_raw_parts(
+                        self.pixels.as_ptr() as *const u8,
+                        row_sz * self.height,
+                    )
                 };
 
                 buf.copy_from_slice(src_bytes);
                 return;
             }
-            _ => {}
-        }
+            Some(pitch) => {
+                for y in 0..self.height {
+                    let dst_start = y * pitch;
+                    let dst_slice = &mut buf[dst_start..dst_start + row_sz];
 
-        let pitch = pitch.unwrap();
+                    let src_start = y * self.width;
+                    let src_slice = &self.pixels[src_start..src_start + self.width];
 
-        for y in 0..self.height {
-            let dst_start = y * pitch;
-            let dst_slice = &mut buf[dst_start..dst_start + row_sz];
+                    let src_bytes = unsafe {
+                        std::slice::from_raw_parts(src_slice.as_ptr() as *const u8, row_sz)
+                    };
 
-            let src_start = y * self.width;
-            let src_slice = &self.pixels[src_start..src_start + self.width];
-
-            let src_bytes =
-                unsafe { std::slice::from_raw_parts(src_slice.as_ptr() as *const u8, row_sz) };
-
-            dst_slice.copy_from_slice(src_bytes);
+                    dst_slice.copy_from_slice(src_bytes);
+                }
+            }
         }
     }
 }

@@ -6,6 +6,7 @@ pub struct Color {
     pub r: u8,
     pub g: u8,
     pub b: u8,
+    _padding: u8,
 }
 
 impl Mul<f32> for Color {
@@ -32,7 +33,7 @@ fn mix(dst: u8, src: u8, a: u8) -> u8 {
 
 impl Color {
     pub const fn rgb(r: u8, g: u8, b: u8) -> Color {
-        Color { r, g, b }
+        Color { r, g, b, _padding: 0 }
     }
 
     pub fn blend(self, src: Color, alpha: u8) -> Color {
@@ -40,6 +41,7 @@ impl Color {
             r: mix(self.r, src.r, alpha),
             g: mix(self.g, src.g, alpha),
             b: mix(self.b, src.b, alpha),
+            _padding: 0,
         }
     }
 
