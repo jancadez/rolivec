@@ -1,6 +1,6 @@
 use crate::clip::ClipVertex;
 use crate::{
-    BackfaceCulling, Fragment, FragmentShader, Framebuffer, I64Mat2, I64Vec2, IVec2, Vec2, Vec3,
+    BackfaceCulling, Fragment, FragmentShader, Framebuffer, I64Vec2, IVec2, Vec2, Vec3,
 };
 
 struct Edge {
@@ -12,7 +12,7 @@ impl Edge {
     #[inline]
     fn new(p: I64Vec2, q: I64Vec2, start: I64Vec2, sign: i64, scale: i64) -> Edge {
         Edge {
-            base: I64Mat2::new(q - p, start - p).determinant() * sign,
+            base: (q - p).det(start - p) * sign,
             step: I64Vec2::new(p.y - q.y, q.x - p.x) * scale * sign,
         }
     }
@@ -65,7 +65,7 @@ impl Framebuffer {
         let b_scr = self.screen_fine(Vec2::new(b.pos.x, b.pos.y));
         let c_scr = self.screen_fine(Vec2::new(c.pos.x, c.pos.y));
 
-        let det = I64Mat2::new(b_scr - a_scr, c_scr - a_scr).determinant();
+        let det = (b_scr - a_scr).det(c_scr - a_scr);
         let sign;
 
         match det.signum() {

@@ -134,14 +134,6 @@ impl Framebuffer {
         self.map_idx(p).map(|idx| &mut self.pixels[idx])
     }
 
-    pub(crate) fn get_z(&self, p: IVec2) -> Option<f32> {
-        self.map_idx(p).map(|idx| self.z_buffer[idx])
-    }
-
-    pub(crate) fn z_mut(&mut self, p: IVec2) -> Option<&mut f32> {
-        self.map_idx(p).map(|idx| &mut self.z_buffer[idx])
-    }
-
     pub fn clear(&mut self, color: Color) {
         (&mut *self.pixels).fill(color);
     }
