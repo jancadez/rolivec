@@ -59,6 +59,10 @@ impl Camera {
         )
     }
 
+    pub fn forward_fps(&self) -> Vec3 {
+        Vec3::new(self.yaw.sin(), 0.0, -self.yaw.cos())
+    }
+
     pub fn right(&self) -> Vec3 {
         self.forward().cross(Vec3::y()).normalize()
     }
@@ -93,6 +97,11 @@ impl Camera {
 
     pub fn move_forward(&mut self, d: f32) {
         self.pos += self.forward() * d;
+        self.set_view_proj();
+    }
+
+    pub fn move_forward_fps(&mut self, d: f32) {
+        self.pos += self.forward_fps() * d;
         self.set_view_proj();
     }
 

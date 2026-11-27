@@ -1,6 +1,5 @@
 macro_rules! impl_vec {
     ($t:ident, $s:ty, { $($f:ident),+ }) => {
-
         #[repr(C)]
         #[derive(Clone, Copy, PartialEq, Default, Debug)]
         pub struct $t {
@@ -8,6 +7,8 @@ macro_rules! impl_vec {
         }
 
         impl $t {
+            pub const LEN: usize = [$(stringify!($f)),+].len();
+
             pub const fn new($($f: $s),+) -> Self { Self { $($f),+ } }
             pub const fn splat(n: $s) -> Self { Self { $($f: n),+ } }
 
@@ -16,11 +17,20 @@ macro_rules! impl_vec {
 
             $(
             pub const fn $f() -> Self {
-                let mut v = $t::zero();
+                let mut v = Self::zero();
                 v.$f = 1 as $s;
                 v
             }
             )+
+
+            pub fn from_array(arr: [$s; Self::LEN]) -> Self {
+                let mut it = arr.into_iter();
+                Self { $($f: it.next().unwrap()),+ }
+            }
+
+            pub fn to_array(self) -> [$s; Self::LEN] {
+                [$(self.$f),+]
+            }
 
             pub fn min(self, rhs: Self) -> Self { Self { $($f: self.$f.min(rhs.$f)),+ } }
             pub fn max(self, rhs: Self) -> Self { Self { $($f: self.$f.max(rhs.$f)),+ } }
