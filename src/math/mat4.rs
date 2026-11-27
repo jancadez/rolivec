@@ -1,5 +1,5 @@
-use crate::macros::impl_mat;
 use super::Vec4;
+use crate::macros::impl_mat;
 
 impl_mat!(Mat4, Vec4, {x, y, z, w});
 

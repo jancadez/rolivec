@@ -7,7 +7,7 @@ mod framebuffer;
 pub use framebuffer::{BackfaceCulling, Framebuffer, RenderingMode};
 
 use framebuffer::{clip, shade};
-pub use shade::{Fragment, FragmentShader, VertexShader};
+pub use shade::{BarycentricShader, Empty, Fragment, Shader, Vary};
 
 mod mesh;
 pub use mesh::Mesh;

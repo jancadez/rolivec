@@ -102,5 +102,5 @@ macro_rules! impl_mat {
     };
 }
 
-pub(crate) use impl_vec;
 pub(crate) use impl_mat;
+pub(crate) use impl_vec;

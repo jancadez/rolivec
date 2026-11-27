@@ -1,4 +1,4 @@
-use crate::{Mat4, Vec3, Vec4, VertexShader};
+use crate::{Mat4, Vec3, Vec4};
 
 pub struct Mvp {
     model: Mat4,
@@ -13,6 +13,10 @@ impl Mvp {
             view_proj: view_proj,
             mvp: view_proj * model,
         }
+    }
+
+    pub fn clip(&self, p: &Vec3) -> Vec4 {
+        self.mvp * Vec4::new(p.x, p.y, p.z, 1.0)
     }
 
     pub fn model(&self) -> Mat4 {
@@ -35,11 +39,5 @@ impl Mvp {
 
     fn compute_mvp(&mut self) {
         self.mvp = self.view_proj * self.model;
-    }
-}
-
-impl VertexShader for Mvp {
-    fn transform(&self, vert: Vec3) -> Vec4 {
-        self.mvp * Vec4::new(vert.x, vert.y, vert.z, 1.0)
     }
 }

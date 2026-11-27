@@ -1,13 +1,11 @@
-use crate::Vec3;
-
 #[derive(Debug)]
-pub struct Mesh {
-    pub vertices: Vec<Vec3>,
+pub struct Mesh<V> {
+    pub vertices: Vec<V>,
     pub indices: Vec<[usize; 3]>,
 }
 
-impl Mesh {
-    pub fn new(vertices: Vec<Vec3>, indices: Vec<[usize; 3]>) -> Option<Self> {
+impl<V> Mesh<V> {
+    pub fn new(vertices: Vec<V>, indices: Vec<[usize; 3]>) -> Option<Self> {
         let max_vertex = vertices.len();
 
         for (_, &idx) in indices.iter().enumerate() {

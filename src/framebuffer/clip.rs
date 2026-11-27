@@ -1,12 +1,17 @@
-use crate::{Vec3, Vec4};
+use crate::{Vary, Vec3, Vec4};
 
 #[derive(Clone, Copy, Default)]
-pub(crate) struct ClipVertex {
+pub(crate) struct ClipVertex<T> {
     pub pos: Vec4,
     pub bary: Vec3,
+    pub vary: T,
 }
 
-pub(crate) fn clip_triangle(vs: &[Vec4; 3], out: &mut [ClipVertex; 9]) -> usize {
+pub(crate) fn clip_triangle<T: Vary>(
+    vs: &[Vec4; 3],
+    vary: &[T; 3],
+    out: &mut [ClipVertex<T>; 9],
+) -> usize {
     let mut bits: [u8; 3] = [0; 3];
 
     for i in 0..3 {
@@ -21,14 +26,17 @@ pub(crate) fn clip_triangle(vs: &[Vec4; 3], out: &mut [ClipVertex; 9]) -> usize 
         ClipVertex {
             pos: vs[0],
             bary: Vec3::new(1.0, 0.0, 0.0),
+            vary: vary[0],
         },
         ClipVertex {
             pos: vs[1],
             bary: Vec3::new(0.0, 1.0, 0.0),
+            vary: vary[1],
         },
         ClipVertex {
             pos: vs[2],
             bary: Vec3::new(0.0, 0.0, 1.0),
+            vary: vary[2],
         },
     ];
 
@@ -80,7 +88,11 @@ fn check_vert(p: Vec4) -> u8 {
     bitset
 }
 
-fn clip_plane(input: &[ClipVertex], plane: usize, out: &mut [ClipVertex; 9]) -> usize {
+fn clip_plane<T: Vary>(
+    input: &[ClipVertex<T>],
+    plane: usize,
+    out: &mut [ClipVertex<T>; 9],
+) -> usize {
     let mut n = 0;
 
     for i in 0..input.len() {
@@ -100,6 +112,7 @@ fn clip_plane(input: &[ClipVertex], plane: usize, out: &mut [ClipVertex; 9]) -> 
             out[n] = ClipVertex {
                 pos: curr.pos + (next.pos - curr.pos) * t,
                 bary: curr.bary + (next.bary - curr.bary) * t,
+                vary: curr.vary + (next.vary - curr.vary) * t,
             };
 
             n += 1;

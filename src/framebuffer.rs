@@ -30,7 +30,7 @@ pub struct Framebuffer {
     pixels: Box<[Color]>,
     z_buffer: Box<[f32]>,
     culling: BackfaceCulling,
-    mode: RenderingMode
+    mode: RenderingMode,
 }
 
 impl Framebuffer {
@@ -104,8 +104,9 @@ impl Framebuffer {
     }
 
     pub(crate) fn screen_fine(&self, p: Vec2) -> I64Vec2 {
-        let x = ((p.x + 1.0) * 0.5 * ((self.width - 1) * Framebuffer::FINE_GRID_SCALE as usize) as f32)
-            .round() as i64;
+        let x =
+            ((p.x + 1.0) * 0.5 * ((self.width - 1) * Framebuffer::FINE_GRID_SCALE as usize) as f32)
+                .round() as i64;
         let y = ((1.0 - (p.y + 1.0) * 0.5)
             * ((self.height - 1) * Framebuffer::FINE_GRID_SCALE as usize) as f32)
             .round() as i64;

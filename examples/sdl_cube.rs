@@ -1,6 +1,4 @@
-use rolivec::{
-    Camera, Color, Fragment, FragmentShader, Framebuffer, Mat4, Mesh, Mvp, RenderingMode, Vec3,
-};
+use rolivec::{BarycentricShader, Camera, Color, Framebuffer, Mat4, Mesh, RenderingMode, Vec3};
 
 use sdl3::keyboard::Keycode;
 use sdl3::pixels::PixelFormat;
@@ -43,8 +41,7 @@ fn main() {
         100.0,
     );
 
-    let mut vert = Mvp::new(Mat4::identity(), camera.view_proj());
-    let frag = Shade;
+    let mut shader = BarycentricShader::new(Mat4::identity(), camera.view_proj());
 
     const D_RAD: f32 = std::f32::consts::PI / 2.0;
     let mut dt = 0.0;
@@ -86,9 +83,11 @@ fn main() {
                 Event::MouseMotion { xrel, yrel, .. }
                     if sdl_context.mouse().relative_mouse_mode(canvas.window()) =>
                 {
-                    camera.yaw += xrel * SENS;
-                    camera.pitch = (camera.pitch + yrel * SENS)
-                        .clamp(-88_f32.to_radians(), 88_f32.to_radians());
+                    camera.set_yaw(camera.yaw() + xrel * SENS);
+                    camera.set_pitch(
+                        (camera.pitch() + yrel * SENS)
+                            .clamp(-88_f32.to_radians(), 88_f32.to_radians()),
+                    );
                 }
                 _ => {}
             }
@@ -118,10 +117,10 @@ fn main() {
 
         deg += dt * D_RAD;
 
-        vert.set_view_proj(camera.view_proj());
+        shader.mvp.set_view_proj(camera.view_proj());
         fb.clear_all(Color::BLACK);
-        vert.set_model(Mat4::rot_y(deg) * Mat4::rot_z(deg));
-        fb.render_mesh(&cube, &vert, &frag);
+        shader.mvp.set_model(Mat4::rot_y(deg) * Mat4::rot_z(deg));
+        fb.render_mesh(&cube, &shader);
 
         texture
             .with_lock(None, |buf: &mut [u8], pitch: usize| {
@@ -147,7 +146,7 @@ fn main() {
     }
 }
 
-fn cube() -> Mesh {
+fn cube() -> Mesh<Vec3> {
     Mesh::new(
         vec![
             Vec3::new(-1.0, 1.0, 1.0),
@@ -175,14 +174,4 @@ fn cube() -> Mesh {
         ],
     )
     .unwrap()
-}
-
-struct Shade;
-impl FragmentShader for Shade {
-    fn shade(&self, frag: Fragment) -> Option<Color> {
-        let r = (frag.bary.x * 255.0).round() as u8;
-        let g = (frag.bary.y * 255.0).round() as u8;
-        let b = (frag.bary.z * 255.0).round() as u8;
-        Some(Color::rgb(r, g, b))
-    }
 }

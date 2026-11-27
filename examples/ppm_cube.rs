@@ -1,8 +1,5 @@
 mod ppm;
-use rolivec::{
-    Color, Fragment, FragmentShader, Framebuffer, Mat4, Mesh, MeshError, Mvp, Vec3, Vec4,
-    VertexShader,
-};
+use rolivec::{BarycentricShader, Color, Framebuffer, Mat4, Mesh, Vec3};
 
 use std::f32::{self};
 use std::io::Result;
@@ -11,22 +8,19 @@ static WIDTH: usize = 1600;
 static HEIGHT: usize = 900;
 
 fn main() -> Result<()> {
-    ppm::reset();
+    ppm::reset()?;
 
     let mut fb = Framebuffer::new(WIDTH, HEIGHT);
-    let mesh = cube().unwrap();
+    let mesh = cube();
 
-    let mut vert = Mvp::new(
-        Mat4::identity(),
-        Mat4::translate(0.0, 0.0, -2.5),
-        Mat4::projection(
-            60_f32.to_radians(),
-            WIDTH as f32 / HEIGHT as f32,
-            0.1,
-            100.0,
-        ),
-    );
-    let frag = Shade;
+    let view_proj = Mat4::projection(
+        60_f32.to_radians(),
+        WIDTH as f32 / HEIGHT as f32,
+        0.1,
+        100.0,
+    ) * Mat4::translate(0.0, 0.0, -4.0);
+
+    let mut shader = BarycentricShader::new(Mat4::identity(), view_proj);
 
     const FPS: f32 = 60.0;
     const D_RAD: f32 = f32::consts::PI / 2.0;
@@ -34,9 +28,9 @@ fn main() -> Result<()> {
     let mut deg = 0.0;
 
     while deg < 4.0 * f32::consts::PI {
-        vert.set_model(Mat4::rot_y(deg) * Mat4::rot_z(deg));
+        shader.mvp.set_model(Mat4::rot_y(deg) * Mat4::rot_z(deg));
         fb.clear_all(Color::BLACK);
-        fb.render_mesh(&mesh, &vert, &frag);
+        fb.render_mesh(&mesh, &shader);
         deg += DT * D_RAD;
 
         write(&fb)?;
@@ -45,7 +39,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn cube() -> std::result::Result<Mesh, MeshError> {
+fn cube() -> Mesh<Vec3> {
     Mesh::new(
         vec![
             Vec3::new(-1.0, 1.0, 1.0),
@@ -72,28 +66,7 @@ fn cube() -> std::result::Result<Mesh, MeshError> {
             [0, 4, 2],
         ],
     )
-}
-
-struct Transform {
-    pub model: Mat4,
-    pub view: Mat4,
-    pub projection: Mat4,
-}
-
-impl VertexShader for Transform {
-    fn transform(&self, vert: Vec3) -> Vec4 {
-        self.projection * (self.view * (self.model * Vec4::new(vert.x, vert.y, vert.z, 1.0)))
-    }
-}
-
-struct Shade;
-impl FragmentShader for Shade {
-    fn shade(&self, frag: Fragment) -> Option<Color> {
-        let r = (frag.bary.x * 255.0).round() as u8;
-        let g = (frag.bary.y * 255.0).round() as u8;
-        let b = (frag.bary.z * 255.0).round() as u8;
-        Some(Color::rgb(r, g, b))
-    }
+    .unwrap()
 }
 
 fn write(fb: &Framebuffer) -> Result<()> {

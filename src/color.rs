@@ -1,3 +1,4 @@
+use crate::Vec3;
 use std::ops::Mul;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -33,7 +34,12 @@ fn mix(dst: u8, src: u8, a: u8) -> u8 {
 
 impl Color {
     pub const fn rgb(r: u8, g: u8, b: u8) -> Color {
-        Color { r, g, b, _padding: 0 }
+        Color {
+            r,
+            g,
+            b,
+            _padding: 0,
+        }
     }
 
     pub fn blend(self, src: Color, alpha: u8) -> Color {
@@ -43,6 +49,11 @@ impl Color {
             b: mix(self.b, src.b, alpha),
             _padding: 0,
         }
+    }
+
+    pub fn vec3(v: Vec3) -> Color {
+        let q = |c: f32| (c.clamp(0.0, 1.0) * 255.0).round() as u8;
+        Color::rgb(q(v.x), q(v.y), q(v.z))
     }
 
     pub const RED: Color = Color::rgb(220, 70, 70);
