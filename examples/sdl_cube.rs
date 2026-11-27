@@ -1,4 +1,6 @@
-use rolivec::{BarycentricShader, Camera, Color, Framebuffer, Mat4, Mesh, RenderingMode, Vec3};
+use rolivec::{
+    Camera, Color, Fragment, Framebuffer, Mat4, Mesh, Mvp, RenderingMode, Shader, Vec3, Vec4,
+};
 
 use sdl3::keyboard::Keycode;
 use sdl3::pixels::PixelFormat;
@@ -29,6 +31,7 @@ fn main() {
 
     let mut fb = Framebuffer::new(WIDTH, HEIGHT);
     let cube = cube();
+    let floor = floor();
 
     let mut camera = Camera::new(
         Vec3::new(0.0, 0.0, 4.0),
@@ -41,7 +44,8 @@ fn main() {
         100.0,
     );
 
-    let mut shader = BarycentricShader::new(Mat4::identity(), camera.view_proj());
+    let mut cube_shader = CubeShader::new(Mat4::identity(), camera.view_proj());
+    let mut floor_shader = FloorShader::new(Mat4::identity(), camera.view_proj());
 
     const D_RAD: f32 = std::f32::consts::PI / 2.0;
     let mut dt = 0.0;
@@ -97,10 +101,10 @@ fn main() {
         let mov_speed = 5.0 * dt;
 
         if keys.is_scancode_pressed(Scancode::W) {
-            camera.move_forward(mov_speed);
+            camera.move_forward_fps(mov_speed);
         }
         if keys.is_scancode_pressed(Scancode::S) {
-            camera.move_forward(-mov_speed);
+            camera.move_forward_fps(-mov_speed);
         }
         if keys.is_scancode_pressed(Scancode::D) {
             camera.move_right(mov_speed);
@@ -117,10 +121,16 @@ fn main() {
 
         deg += dt * D_RAD;
 
-        shader.mvp.set_view_proj(camera.view_proj());
         fb.clear_all(Color::BLACK);
-        shader.mvp.set_model(Mat4::rot_y(deg) * Mat4::rot_z(deg));
-        fb.render_mesh(&cube, &shader);
+
+        cube_shader.mvp.set_view_proj(camera.view_proj());
+        cube_shader
+            .mvp
+            .set_model(Mat4::rot_y(deg) * Mat4::rot_z(deg));
+        fb.render_mesh(&cube, &cube_shader);
+
+        floor_shader.mvp.set_view_proj(camera.view_proj());
+        fb.render_mesh(&floor, &floor_shader);
 
         texture
             .with_lock(None, |buf: &mut [u8], pitch: usize| {
@@ -143,6 +153,44 @@ fn main() {
 
         frame_count += 1;
         dt = start.elapsed().as_secs_f32();
+    }
+}
+
+fn floor() -> Mesh<(Vec3, Vec3)> {
+    Mesh::new(
+        vec![
+            (Vec3::new(10.0, -2.0, 10.0), Vec3::new(1.0, 1.0, 0.0)),
+            (Vec3::new(10.0, -2.0, -10.0), Vec3::new(0.0, 1.0, 0.0)),
+            (Vec3::new(-10.0, -2.0, 10.0), Vec3::new(0.0, 1.0, 1.0)),
+            (Vec3::new(-10.0, -2.0, -10.0), Vec3::new(1.0, 0.0, 1.0)),
+        ],
+        vec![[0, 1, 2], [3, 2, 1]],
+    )
+    .unwrap()
+}
+
+pub struct FloorShader {
+    pub mvp: Mvp,
+}
+
+impl FloorShader {
+    pub fn new(model: Mat4, view_proj: Mat4) -> Self {
+        Self {
+            mvp: Mvp::new(model, view_proj),
+        }
+    }
+}
+
+impl Shader for FloorShader {
+    type Vertex = (Vec3, Vec3);
+    type Varying = Vec3;
+
+    fn vertex(&self, v: &Self::Vertex) -> (Vec4, Self::Varying) {
+        (self.mvp.clip(&v.0), v.1)
+    }
+
+    fn fragment(&self, v: Self::Varying, _frag: Fragment) -> Option<Color> {
+        Some(Color::vec3(v))
     }
 }
 
@@ -174,4 +222,32 @@ fn cube() -> Mesh<Vec3> {
         ],
     )
     .unwrap()
+}
+
+pub struct CubeShader {
+    pub mvp: Mvp,
+}
+
+impl CubeShader {
+    pub fn new(model: Mat4, view_proj: Mat4) -> Self {
+        Self {
+            mvp: Mvp::new(model, view_proj),
+        }
+    }
+}
+
+impl Shader for CubeShader {
+    type Vertex = Vec3;
+    type Varying = Vec3;
+
+    fn vertex(&self, v: &Self::Vertex) -> (Vec4, Self::Varying) {
+        let x = (v.x + 1.0) / 2.0;
+        let y = (v.y + 1.0) / 2.0;
+        let z = (v.z + 1.0) / 2.0;
+        (self.mvp.clip(v), Vec3::new(x, y, z))
+    }
+
+    fn fragment(&self, v: Self::Varying, _frag: Fragment) -> Option<Color> {
+        Some(Color::vec3(v))
+    }
 }
