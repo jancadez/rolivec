@@ -1,5 +1,8 @@
 mod ppm;
-use rolivec::{BarycentricShader, Color, Framebuffer, Mat4, Mesh, Vec3};
+use rolivec::color::Color;
+use rolivec::framebuffer::{BarycentricShader, Framebuffer};
+use rolivec::math::{Mat4, Vec3};
+use rolivec::mesh::Mesh;
 
 use std::f32::{self};
 use std::io::Result;

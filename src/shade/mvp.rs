@@ -1,4 +1,4 @@
-use crate::{Mat4, Vec3, Vec4};
+use crate::math::{Mat4, Vec3, Vec4};
 
 pub struct Mvp {
     model: Mat4,

@@ -1,5 +1,7 @@
-use crate::clip::ClipVertex;
-use crate::{BackfaceCulling, Fragment, Framebuffer, I64Vec2, IVec2, Shader, Vary, Vec2, Vec3};
+use super::clip::ClipVertex;
+use crate::framebuffer::{BackfaceCulling, Framebuffer};
+use crate::math::{I64Vec2, IVec2, Vec2, Vec3};
+use crate::shade::{Fragment, Shader, Vary};
 
 struct Edge {
     base: i64,

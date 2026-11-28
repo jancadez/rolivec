@@ -1,4 +1,6 @@
-use crate::{Color, Framebuffer, IVec2, Vec2};
+use crate::color::Color;
+use crate::framebuffer::Framebuffer;
+use crate::math::{IVec2, Vec2};
 
 impl Framebuffer {
     pub fn line(&mut self, a: Vec2, b: Vec2, color: Color, alpha: u8) {

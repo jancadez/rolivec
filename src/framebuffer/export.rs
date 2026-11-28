@@ -1,4 +1,5 @@
-use crate::{Color, Framebuffer};
+use crate::color::Color;
+use crate::framebuffer::Framebuffer;
 
 impl Framebuffer {
     pub fn rgbx32_into(&self, buf: &mut [u8], pitch: Option<usize>) {

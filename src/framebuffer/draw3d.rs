@@ -1,5 +1,9 @@
-use crate::clip::{ClipVertex, clip_triangle};
-use crate::{Color, Framebuffer, Mesh, RenderingMode, Shader, Vec2, Vec4};
+use super::clip::{ClipVertex, clip_triangle};
+use crate::color::Color;
+use crate::framebuffer::{Framebuffer, RenderingMode};
+use crate::math::{Vec2, Vec4};
+use crate::mesh::Mesh;
+use crate::shade::Shader;
 
 impl Framebuffer {
     fn draw_clip_triangle<S: Shader>(

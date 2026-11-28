@@ -1,4 +1,6 @@
-use crate::{Color, Framebuffer, IVec2};
+use crate::color::Color;
+use crate::framebuffer::Framebuffer;
+use crate::math::IVec2;
 
 impl Framebuffer {
     pub fn draw_pixel(&mut self, p: IVec2, color: Color, alpha: u8) {

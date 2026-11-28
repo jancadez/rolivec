@@ -1,10 +1,7 @@
-pub mod camera;
-pub mod mvp;
+use crate::macros::{impl_mat, impl_vec};
 
 mod mat4;
 pub use mat4::Mat4;
-
-use crate::macros::{impl_mat, impl_vec};
 
 impl_vec!(Vec2, f32, {x, y});
 impl_vec!(Vec3, f32, {x, y, z});

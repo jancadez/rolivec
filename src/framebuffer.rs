@@ -4,9 +4,9 @@ pub mod draw3d;
 pub mod export;
 pub mod pixel;
 pub mod rasterize;
-pub mod shade;
 
-use crate::{Color, I64Vec2, IVec2, Vec2};
+use crate::color::Color;
+use crate::math::{I64Vec2, IVec2, Vec2};
 
 #[derive(Eq, PartialEq, Debug, Copy, Clone)]
 pub enum BackfaceCulling {

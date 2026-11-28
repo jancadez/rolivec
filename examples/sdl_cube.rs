@@ -1,6 +1,9 @@
-use rolivec::{
-    Camera, Color, Fragment, Framebuffer, Mat4, Mesh, Mvp, RenderingMode, Shader, Vec3, Vec4,
-};
+use rolivec::camera::Camera;
+use rolivec::color::Color;
+use rolivec::framebuffer::{Framebuffer, RenderingMode};
+use rolivec::math::{Mat4, Vec3, Vec4};
+use rolivec::mesh::Mesh;
+use rolivec::shade::{Fragment, Mvp, Shader};
 
 use sdl3::keyboard::Keycode;
 use sdl3::pixels::PixelFormat;

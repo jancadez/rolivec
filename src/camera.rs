@@ -1,4 +1,4 @@
-use crate::{Mat4, Vec3};
+use crate::math::{Mat4, Vec3};
 
 pub struct Camera {
     pos: Vec3,
