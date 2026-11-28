@@ -51,7 +51,7 @@ impl Camera {
         self.view_proj
     }
 
-    pub fn forward(&self) -> Vec3 {
+    pub fn forward_relative(&self) -> Vec3 {
         Vec3::new(
             self.pitch.cos() * self.yaw.sin(),
             -self.pitch.sin(),
@@ -59,12 +59,12 @@ impl Camera {
         )
     }
 
-    pub fn forward_fps(&self) -> Vec3 {
+    pub fn forward(&self) -> Vec3 {
         Vec3::new(self.yaw.sin(), 0.0, -self.yaw.cos())
     }
 
     pub fn right(&self) -> Vec3 {
-        self.forward().cross(Vec3::y()).normalize()
+        self.forward_relative().cross(Vec3::y()).normalize()
     }
 
     pub fn pos(&self) -> Vec3 {
@@ -95,13 +95,13 @@ impl Camera {
         self.far
     }
 
-    pub fn move_forward(&mut self, d: f32) {
-        self.pos += self.forward() * d;
+    pub fn move_forward_relative(&mut self, d: f32) {
+        self.pos += self.forward_relative() * d;
         self.set_view_proj();
     }
 
-    pub fn move_forward_fps(&mut self, d: f32) {
-        self.pos += self.forward_fps() * d;
+    pub fn move_forward(&mut self, d: f32) {
+        self.pos += self.forward() * d;
         self.set_view_proj();
     }
 

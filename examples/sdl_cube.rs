@@ -5,7 +5,7 @@ use rolivec::math::{Mat4, Vec3, Vec4};
 use rolivec::mesh::Mesh;
 use rolivec::shade::{Fragment, Mvp, Shader};
 
-use sdl3::keyboard::Keycode;
+use sdl3::keyboard::{KeyboardState, Keycode};
 use sdl3::pixels::PixelFormat;
 use sdl3::{event::Event, keyboard::Scancode};
 use std::time::{Duration, Instant};
@@ -103,24 +103,10 @@ fn main() {
         let keys = event_pump.keyboard_state();
         let mov_speed = 5.0 * dt;
 
-        if keys.is_scancode_pressed(Scancode::W) {
-            camera.move_forward_fps(mov_speed);
-        }
-        if keys.is_scancode_pressed(Scancode::S) {
-            camera.move_forward_fps(-mov_speed);
-        }
-        if keys.is_scancode_pressed(Scancode::D) {
-            camera.move_right(mov_speed);
-        }
-        if keys.is_scancode_pressed(Scancode::A) {
-            camera.move_right(-mov_speed);
-        }
-        if keys.is_scancode_pressed(Scancode::Space) {
-            camera.move_up(mov_speed);
-        }
-        if keys.is_scancode_pressed(Scancode::LShift) {
-            camera.move_up(-mov_speed);
-        }
+        let v = move_camera(&keys);
+        camera.move_right(v.x * mov_speed);
+        camera.move_up(v.y * mov_speed);
+        camera.move_forward(v.z * mov_speed);
 
         deg += dt * D_RAD;
 
@@ -157,6 +143,36 @@ fn main() {
         frame_count += 1;
         dt = start.elapsed().as_secs_f32();
     }
+}
+
+fn move_camera(keys: &KeyboardState) -> Vec3 {
+    let mut v = Vec3::zero();
+
+    if keys.is_scancode_pressed(Scancode::W) {
+        v += Vec3::z();
+    }
+    if keys.is_scancode_pressed(Scancode::S) {
+        v -= Vec3::z();
+    }
+    if keys.is_scancode_pressed(Scancode::D) {
+        v += Vec3::x();
+    }
+    if keys.is_scancode_pressed(Scancode::A) {
+        v -= Vec3::x();
+    }
+
+    if v.length() != 0.0 {
+        v = v.normalize();
+    }
+
+    if keys.is_scancode_pressed(Scancode::Space) {
+        v += Vec3::y();
+    }
+    if keys.is_scancode_pressed(Scancode::LShift) {
+        v -= Vec3::y();
+    }
+
+    v
 }
 
 fn floor() -> Mesh<(Vec3, Vec3)> {
